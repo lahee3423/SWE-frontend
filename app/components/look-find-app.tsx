@@ -1,12 +1,104 @@
 "use client";
-import { ChangeEvent,useMemo,useRef,useState } from "react";
-import { readFavorites,readHistory,writeFavorites,writeHistory } from "../apis/local-store";
+
+import { ChangeEvent, useMemo, useRef, useState } from "react";
+import { readFavorites, readHistory, writeFavorites, writeHistory } from "../apis/local-store";
 import { products } from "../constants/look-find";
-import type { Platform,Product,SearchHistory } from "../types/look-find";
-type Page="home"|"history"|"favorites"; const won=(n:number)=>new Intl.NumberFormat("ko-KR").format(n)+"원";
-export default function LookFindApp(){const[page,setPage]=useState<Page>("home"),[login,setLogin]=useState(false),[image,setImage]=useState<string|null>(null),[searched,setSearched]=useState(false),[platform,setPlatform]=useState<Platform|"전체">("전체"),[sort,setSort]=useState("similarity"),[history,setHistory]=useState<SearchHistory[]>(readHistory),[favorites,setFavorites]=useState<string[]>(readFavorites);const ref=useRef<HTMLInputElement>(null);const listed=useMemo(()=>products.filter(x=>platform==="전체"||x.platform===platform).sort((a,b)=>sort==="price"?a.price-b.price:b.similarity-a.similarity),[platform,sort]);const choose=(e:ChangeEvent<HTMLInputElement>)=>{const f=e.target.files?.[0];if(f){setImage(URL.createObjectURL(f));setSearched(false)}};const search=()=>{if(!image)return ref.current?.click();setSearched(true);if(login)setHistory(x=>{const next=[{id:crypto.randomUUID(),label:"업로드한 상의 사진",searchedAt:"방금 전",count:20},...x];writeHistory(next);return next})};const heart=(id:string)=>{if(!login)return alert("찜 기능은 로그인 후 이용할 수 있어요.");setFavorites(x=>{const next=x.includes(id)?x.filter(v=>v!==id):[...x,id];writeFavorites(next);return next})};return <main className="lookfind"><header><button className="logo" onClick={()=>setPage("home")}>✦ LookFind</button><nav>{([['home','이미지 검색'],['history','최근 검색'],['favorites','찜 목록']] as const).map(([id,label])=><button key={id} className={page===id?"on":""} onClick={()=>setPage(id)}>{label}</button>)}</nav><button className="account" onClick={()=>setLogin(x=>!x)}>{login?"김라희님 · 로그아웃":"로그인"}</button></header>{page==="home"?<section className="home"><div className="intro"><p className="kicker">FIND THE LOOK YOU LOVE</p><h1>사진 한 장으로<br/><i>닮은 옷</i>을 찾아보세요.</h1><p>사진 속 상의만 분석해 무신사와 에이블리의 비슷한 상품을 찾아드려요.</p></div><div className="upload"><input ref={ref} type="file" accept="image/*" onChange={choose}/>{image?<div className="preview"><img src={image} alt="업로드한 검색 사진"/><button onClick={()=>{setImage(null);setSearched(false)}}>×</button></div>:<button className="drop" onClick={()=>ref.current?.click()}><b>↑</b><strong>상의가 보이는 사진을 올려주세요</strong><small>JPG, PNG 파일 · 최대 10MB</small><em>사진 선택</em></button>}<button className="search" onClick={search}>{image?"비슷한 상품 찾기":"사진을 먼저 선택하세요"} <span>→</span></button><p className="note">얼굴·배경은 분석에서 제외되며, 사진은 검색 용도로만 사용됩니다.</p></div>{searched&&<Results items={listed} platform={platform} setPlatform={setPlatform} sort={sort} setSort={setSort} favorites={favorites} heart={heart}/>}</section>:page==="history"?<History login={login} items={history} remove={id=>setHistory(x=>{const next=x.filter(v=>v.id!==id);writeHistory(next);return next})} clear={()=>setHistory(()=>{writeHistory([]);return []})} reopen={()=>{setPage("home");setSearched(true)}}/>:<Favorites login={login} items={products.filter(x=>favorites.includes(x.id))} favorites={favorites} heart={heart}/>}</main>}
-function Results({items,platform,setPlatform,sort,setSort,favorites,heart}:{items:Product[];platform:Platform|"전체";setPlatform:(x:Platform|"전체")=>void;sort:string;setSort:(x:string)=>void;favorites:string[];heart:(x:string)=>void}){return <section className="results"><div className="title"><div><p className="kicker">MATCHED FOR YOU</p><h2>비슷한 상의 <b>20개</b>를 찾았어요</h2></div><span>유사도 높은 순</span></div><div className="filters"><div>{(["전체","무신사","에이블리"] as const).map(x=><button className={x===platform?"active":""} onClick={()=>setPlatform(x)} key={x}>{x}</button>)}</div><select value={sort} onChange={e=>setSort(e.target.value)}><option value="similarity">유사도순</option><option value="price">낮은 가격순</option></select></div><div className="grid">{items.map(x=><Card key={x.id} item={x} saved={favorites.includes(x.id)} heart={heart}/>)}</div></section>}
-function Card({item,saved,heart}:{item:Product;saved:boolean;heart:(x:string)=>void}){return <article className="product"><div className={`image ${item.tone}`}><span>{item.similarity}% 일치</span><button className={saved?"saved":""} onClick={()=>heart(item.id)}>{saved?"♥":"♡"}</button></div><p>{item.platform}</p><h3>{item.name}</h3><small>{item.brand}</small><strong>{won(item.price)}</strong><a href="https://www.musinsa.com" target="_blank" rel="noreferrer">상품 보러가기 ↗</a></article>}
-function History({login,items,remove,clear,reopen}:{login:boolean;items:SearchHistory[];remove:(x:string)=>void;clear:()=>void;reopen:()=>void}){if(!login)return <Gate title="최근 검색은 로그인 후 저장돼요" text="로그인하면 이전에 검색한 사진과 결과를 언제든 다시 볼 수 있어요."/>;return <section className="member"><p className="kicker">MY SEARCHES</p><h1>최근 검색</h1><div className="sub"><p>검색 원본 이미지는 일정 기간 후 자동으로 삭제됩니다.</p><button onClick={clear}>전체 삭제</button></div><div className="history">{items.length?items.map(x=><article key={x.id}><button onClick={reopen}><b>⌁</b><span><strong>{x.label}</strong><small>{x.searchedAt} · {x.count}개 결과</small></span></button><button onClick={()=>remove(x.id)}>×</button></article>):<p>저장된 검색 이력이 없습니다.</p>}</div></section>}
-function Favorites({login,items,favorites,heart}:{login:boolean;items:Product[];favorites:string[];heart:(x:string)=>void}){if(!login)return <Gate title="찜 목록은 로그인 후 이용할 수 있어요" text="마음에 드는 상품을 저장하고 나중에 비교해보세요."/>;return <section className="member"><p className="kicker">MY PICKS</p><h1>찜 목록 <small>{favorites.length}</small></h1>{items.length?<div className="grid">{items.map(x=><Card key={x.id} item={x} saved heart={heart}/>)}</div>:<p className="empty">아직 찜한 상품이 없습니다.</p>}</section>}
-function Gate({title,text}:{title:string;text:string}){return <section className="gate"><b>♡</b><h1>{title}</h1><p>{text}</p></section>}
+import type { Platform, Product, SearchHistory } from "../types/look-find";
+
+type Page = "home" | "history" | "favorites";
+
+const won = (value: number) => `${new Intl.NumberFormat("ko-KR").format(value)}원`;
+
+export default function LookFindApp() {
+  const [page, setPage] = useState<Page>("home");
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [searched, setSearched] = useState(false);
+  const [platform, setPlatform] = useState<Platform | "전체">("전체");
+  const [sort, setSort] = useState<"similarity" | "price">("similarity");
+  const [history, setHistory] = useState<SearchHistory[]>(readHistory);
+  const [favorites, setFavorites] = useState<string[]>(readFavorites);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  const listedProducts = useMemo(() => products
+    .filter((item) => platform === "전체" || item.platform === platform)
+    .sort((a, b) => sort === "price" ? a.price - b.price : b.similarity - a.similarity), [platform, sort]);
+
+  function chooseImage(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setImageUrl(URL.createObjectURL(file));
+    setSearched(false);
+  }
+
+  function search() {
+    if (!imageUrl) return fileInput.current?.click();
+    setSearched(true);
+    if (loggedIn) setHistory((current) => {
+      const next = [{ id: crypto.randomUUID(), label: "업로드한 상의 사진", searchedAt: "방금 전", count: 20 }, ...current];
+      writeHistory(next);
+      return next;
+    });
+  }
+
+  function toggleFavorite(id: string) {
+    if (!loggedIn) return window.alert("찜 기능은 로그인 후 이용할 수 있어요.");
+    setFavorites((current) => {
+      const next = current.includes(id) ? current.filter((value) => value !== id) : [...current, id];
+      writeFavorites(next);
+      return next;
+    });
+  }
+
+  return <main className="lookfind">
+    <header className="site-header">
+      <button className="wordmark" onClick={() => setPage("home")}>LOOK<span>•</span>FIND</button>
+      <nav aria-label="주 메뉴">
+        {([ ["home", "SEARCH"], ["history", "ARCHIVE"], ["favorites", "SAVED"] ] as const).map(([id, label]) =>
+          <button className={page === id ? "active" : ""} key={id} onClick={() => setPage(id)}>{label}</button>)}
+      </nav>
+      <button className="account" onClick={() => setLoggedIn((current) => !current)}>{loggedIn ? "MY PAGE / LOGOUT" : "LOGIN"}</button>
+    </header>
+
+    {page === "home" ? <section className="home">
+      <section className="hero">
+        <div className="hero-title"><p>IMAGE-BASED FASHION SEARCH</p><h1>LOOK<br />FIND</h1><span>01 — 03</span></div>
+        <div className="fashion-figure" aria-hidden="true"><i /><b /><em /></div>
+        <div className="hero-copy"><p>YOUR LOOK,<br />FOUND.</p><small>한 장의 사진으로<br />당신의 스타일과 닮은 옷을 찾아보세요.</small><button onClick={() => fileInput.current?.click()}>START SEARCH <span>→</span></button></div>
+      </section>
+
+      <section className="search-section">
+        <div className="vertical-label">VISUAL SEARCH</div>
+        <div className="search-panel">
+          <div className="search-heading"><p>UPLOAD YOUR LOOK</p><h2>사진 속 상의를<br />찾아볼 준비가 되었나요?</h2></div>
+          <input ref={fileInput} className="file-input" type="file" accept="image/*" onChange={chooseImage} />
+          {imageUrl ? <div className="preview"><img src={imageUrl} alt="업로드한 검색 사진" /><button onClick={() => { setImageUrl(null); setSearched(false); }}>×</button></div> : <button className="dropzone" onClick={() => fileInput.current?.click()}><b>+</b><strong>상의 사진 업로드</strong><small>JPG, PNG · MAX 10MB</small></button>}
+          <button className="primary-button" onClick={search}>{imageUrl ? "SIMILAR LOOKS FIND" : "SELECT AN IMAGE"} <span>→</span></button>
+          <p className="disclaimer">얼굴과 배경은 제외하고 상의만 분석합니다.</p>
+        </div>
+      </section>
+
+      {searched && <Results items={listedProducts} platform={platform} setPlatform={setPlatform} sort={sort} setSort={setSort} favorites={favorites} onFavorite={toggleFavorite} />}
+    </section> : page === "history" ? <History loggedIn={loggedIn} history={history} remove={(id) => setHistory((current) => { const next = current.filter((item) => item.id !== id); writeHistory(next); return next; })} clear={() => { setHistory([]); writeHistory([]); }} reopen={() => { setPage("home"); setSearched(true); }} /> : <Favorites loggedIn={loggedIn} items={products.filter((item) => favorites.includes(item.id))} favorites={favorites} onFavorite={toggleFavorite} />}
+  </main>;
+}
+
+function Results({ items, platform, setPlatform, sort, setSort, favorites, onFavorite }: { items: Product[]; platform: Platform | "전체"; setPlatform: (value: Platform | "전체") => void; sort: "similarity" | "price"; setSort: (value: "similarity" | "price") => void; favorites: string[]; onFavorite: (id: string) => void }) {
+  return <section className="results"><div className="result-head"><div><p>MATCHED COLLECTION</p><h2>LOOKS LIKE <i>YOU</i></h2></div><span>20 ITEMS FOUND</span></div><div className="filters"><div>{(["전체", "무신사", "에이블리"] as const).map((item) => <button className={platform === item ? "active" : ""} key={item} onClick={() => setPlatform(item)}>{item}</button>)}</div><select value={sort} onChange={(event) => setSort(event.target.value as "similarity" | "price")}><option value="similarity">유사도순</option><option value="price">낮은 가격순</option></select></div><div className="product-grid">{items.map((item) => <ProductCard item={item} key={item.id} saved={favorites.includes(item.id)} onFavorite={onFavorite} />)}</div></section>;
+}
+
+function ProductCard({ item, saved, onFavorite }: { item: Product; saved: boolean; onFavorite: (id: string) => void }) {
+  return <article className="product-card"><div className={`product-visual ${item.tone}`}><span>{item.similarity}% MATCH</span><button className={saved ? "saved" : ""} onClick={() => onFavorite(item.id)}>{saved ? "♥" : "♡"}</button></div><p>{item.platform}</p><h3>{item.name}</h3><small>{item.brand}</small><strong>{won(item.price)}</strong><a href="https://www.musinsa.com" target="_blank" rel="noreferrer">VIEW ITEM ↗</a></article>;
+}
+
+function History({ loggedIn, history, remove, clear, reopen }: { loggedIn: boolean; history: SearchHistory[]; remove: (id: string) => void; clear: () => void; reopen: () => void }) {
+  if (!loggedIn) return <MemberGate title="검색 기록은 로그인 후 저장돼요" text="로그인하면 이전에 검색한 사진과 결과를 다시 확인할 수 있어요." />;
+  return <section className="member-page"><p>MY ARCHIVE</p><h1>RECENT<br />SEARCHES</h1><div className="member-description"><span>검색 원본 이미지는 일정 기간 후 자동 삭제됩니다.</span><button onClick={clear}>CLEAR ALL</button></div><div className="history-list">{history.length ? history.map((item) => <article key={item.id}><button className="history-open" onClick={reopen}><b>⌁</b><span><strong>{item.label}</strong><small>{item.searchedAt} · {item.count}개 결과</small></span></button><button className="remove" onClick={() => remove(item.id)}>×</button></article>) : <p className="empty">저장된 검색 이력이 없습니다.</p>}</div></section>;
+}
+
+function Favorites({ loggedIn, items, favorites, onFavorite }: { loggedIn: boolean; items: Product[]; favorites: string[]; onFavorite: (id: string) => void }) {
+  if (!loggedIn) return <MemberGate title="찜 목록은 로그인 후 이용할 수 있어요" text="마음에 드는 상품을 저장하고 나중에 비교해보세요." />;
+  return <section className="member-page"><p>MY SAVED ITEMS</p><h1>SAVED<br />LOOKS <small>{favorites.length}</small></h1>{items.length ? <div className="product-grid">{items.map((item) => <ProductCard item={item} key={item.id} saved onFavorite={onFavorite} />)}</div> : <p className="empty">아직 찜한 상품이 없습니다.</p>}</section>;
+}
+
+function MemberGate({ title, text }: { title: string; text: string }) { return <section className="member-gate"><b>✦</b><h1>{title}</h1><p>{text}</p></section>; }
