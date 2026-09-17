@@ -16,6 +16,20 @@ const demoMatches = [
   { id: "match-4", name: "오버사이즈 싱글 자켓", brand: "COVERNAT", price: "109,000원", source: "무신사", tone: "match-four" },
   { id: "match-5", name: "체크 하프 재킷", brand: "오브제", price: "54,000원", source: "지그재그", tone: "match-five" },
   { id: "match-6", name: "클래식 울 재킷", brand: "루즈핏", price: "72,900원", source: "에이블리", tone: "match-six" },
+  { id: "match-7", name: "리넨 더블 블레이저", brand: "LAFUDGE STORE", price: "96,000원", source: "무신사", tone: "match-two" },
+  { id: "match-8", name: "크롭 트위드 자켓", brand: "MORU", price: "69,000원", source: "지그재그", tone: "match-three" },
+  { id: "match-9", name: "소프트 테일러드 재킷", brand: "베니토", price: "88,500원", source: "에이블리", tone: "match-four" },
+  { id: "match-10", name: "투 버튼 코튼 자켓", brand: "THISISNEVERTHAT", price: "118,000원", source: "무신사", tone: "match-five" },
+  { id: "match-11", name: "스트랩 포인트 블레이저", brand: "오브이", price: "83,000원", source: "지그재그", tone: "match-six" },
+  { id: "match-12", name: "세미 오버 울 자켓", brand: "프롬비기닝", price: "91,000원", source: "에이블리", tone: "match-one" },
+  { id: "match-13", name: "워크웨어 체크 셔츠", brand: "MUSINSA STANDARD", price: "49,900원", source: "무신사", tone: "match-three" },
+  { id: "match-14", name: "데님 믹스 자켓", brand: "페일제이", price: "64,000원", source: "지그재그", tone: "match-four" },
+  { id: "match-15", name: "모던 싱글 재킷", brand: "아뜨랑스", price: "76,000원", source: "에이블리", tone: "match-five" },
+  { id: "match-16", name: "릴렉스 핏 블레이저", brand: "YALE", price: "99,000원", source: "무신사", tone: "match-six" },
+  { id: "match-17", name: "빈티지 버튼 자켓", brand: "메이비베이비", price: "57,000원", source: "지그재그", tone: "match-one" },
+  { id: "match-18", name: "오버핏 하프 코트", brand: "리린", price: "105,000원", source: "에이블리", tone: "match-two" },
+  { id: "match-19", name: "텍스처 울 셋업 자켓", brand: "SPAO", price: "79,900원", source: "무신사", tone: "match-four" },
+  { id: "match-20", name: "클래식 라인 재킷", brand: "에프앤디", price: "71,000원", source: "지그재그", tone: "match-five" },
 ];
 
 export default function LookFindApp() {
