@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { readFavorites, readHistory, writeFavorites, writeHistory } from "../apis/local-store";
 import { products } from "../constants/look-find";
@@ -17,6 +17,7 @@ export default function LookFindApp() {
   const [favorites, setFavorites] = useState<string[]>(readFavorites);
   const [uploadMode, setUploadMode] = useState(false);
   const [analysisStage, setAnalysisStage] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const stageLock = useRef(false);
   const touchStart = useRef(0);
@@ -51,9 +52,18 @@ export default function LookFindApp() {
   }, [page, uploadMode]);
 
   function chooseImage(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    loadImage(event.target.files?.[0]);
+  }
+
+  function loadImage(file?: File) {
     if (!file) return;
     setUploadMode(false);
+    setIsDragging(false);
+  }
+
+  function dropImage(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    loadImage(event.dataTransfer.files?.[0]);
   }
 
   function toggleFavorite(id: string) {
@@ -90,7 +100,7 @@ export default function LookFindApp() {
         <div className="hero-image"><Image src="/lookfind-hero.png" alt="LookFind 스타일 이미지" fill priority sizes="(max-width: 700px) 100vw, 50vw" /><div className={`analysis-layer stage-${analysisStage}`} aria-label="AI 의류 분석 표시"><div className="analysis-box shirt"><span>TOP</span><div className="analysis-crop crop-shirt"><small>TOP</small></div></div><div className="analysis-box pants"><span>PANTS</span><div className="analysis-crop crop-pants"><small>PANTS</small></div></div><div className="analysis-box boots"><span>BOOTS</span><div className="analysis-crop crop-boots"><small>BOOTS</small></div></div></div></div>
       </section>
     </section> : page === "history" ? <History loggedIn={loggedIn} history={history} remove={(id) => setHistory((current) => { const next = current.filter((item) => item.id !== id); writeHistory(next); return next; })} clear={() => { setHistory([]); writeHistory([]); }} reopen={() => setPage("home")} /> : <Favorites loggedIn={loggedIn} items={products.filter((item) => favorites.includes(item.id))} favorites={favorites} onFavorite={toggleFavorite} />}
-    {uploadMode && <section className="upload-mode" aria-modal="true" role="dialog"><button className="close-upload" onClick={() => setUploadMode(false)} aria-label="업로드 화면 닫기">×</button><div><p>LOOKFIND / IMAGE SEARCH</p><h2>YOUR<br />PHOTO</h2><button className="upload-mode-button" onClick={() => fileInput.current?.click()}>PHOTO UPLOAD <span>↗</span></button><small>JPG, PNG · MAX 10MB</small></div></section>}
+    {uploadMode && <section className="upload-mode" aria-modal="true" role="dialog"><button className="close-upload" onClick={() => setUploadMode(false)} aria-label="업로드 화면 닫기">×</button><div className="upload-content"><h2>UPLOAD PHOTO</h2><div className={isDragging ? "upload-finder dragging" : "upload-finder"} onDragOver={(event) => { event.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={dropImage}><span className="finder-corner top-left" /><span className="finder-corner top-right" /><span className="finder-corner bottom-left" /><span className="finder-corner bottom-right" /><span className="recording">● REC</span><span className="finder-plus">+</span><p>사진을 이곳에 끌어다 놓거나</p><button className="upload-mode-button" onClick={() => fileInput.current?.click()}>SELECT FILE <span>↗</span></button><small>JPG, PNG · MAX 10MB</small></div></div></section>}
   </main>;
 }
 
