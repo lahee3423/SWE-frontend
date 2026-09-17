@@ -1,22 +1,34 @@
 /* Test-search navigation overrides kept separate from user-edited global styles. */
-.matches-top { align-items: flex-end; }
-
-/* Keep the product heading fixed; bring the left photo group down to its baseline. */
-.uploaded-column { padding-top: 30px; }
-.uploaded-photo { margin-top: 34px; }
-
-/* Once the results area reaches the viewport, keep its controls in place. */
-.uploaded-column {
-  position: sticky;
-  top: 22px;
-  align-self: start;
-}
-
-.matches-top {
+.test-controls {
   position: sticky;
   top: 0;
-  z-index: 3;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(250px, 30%) 1fr;
+  gap: 5vw;
+  align-items: center;
+  padding: 20px 0 12px;
+  border-top: 1px solid var(--ink);
   background: var(--paper);
+}
+
+.test-control-label {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .75px;
+}
+
+.matches-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+}
+
+.test-layout {
+  padding-top: 0;
+  border-top: 0;
 }
 
 .source-filter {
@@ -57,9 +69,8 @@
 .filter-indicator.at-3 { transform: translateX(352.5px); }
 
 @media (max-width: 800px) {
-  .matches-top { align-items: flex-start; }
-  .uploaded-column { position: static; padding-top: 0; }
-  .uploaded-photo { margin-top: 0; }
+  .test-controls { position: static; grid-template-columns: 1fr; gap: 14px; padding: 0 0 18px; border: 0; }
+  .matches-controls { align-items: flex-start; flex-direction: column; gap: 10px; }
   .source-filter { width: 320px; min-width: 320px; flex-basis: 320px; padding: 3px; }
   .source-filter button { padding: 10px 3px; font-size: 10px; }
   .filter-indicator { top: 3px; bottom: 3px; left: 9px; width: 66px; }

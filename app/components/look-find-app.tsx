@@ -145,7 +145,24 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   const filters = [{ id: "all", label: "ALL" }, { id: "무신사", label: "MUSINSA" }, { id: "지그재그", label: "ZIGZAG" }, { id: "에이블리", label: "ABLY" }];
   const visibleMatches = demoMatches.filter((item) => filter === "all" || item.source === filter);
   const activeIndex = filters.findIndex(({ id }) => id === filter);
-  return <section className="test-search"><div className="test-heading"><div><p>LOOKFIND / TEST SEARCH</p><h1>SIMILAR<br />LOOKS</h1></div></div><div className="test-layout"><aside className="uploaded-column"><p>YOUR PHOTO</p><div className="uploaded-photo" style={{ backgroundImage: `url(${image ?? "/lookfind-hero.png"})` }} /><small>업로드한 이미지에서 상의·하의를 분석했어요.</small></aside><section className="matches-column"><div className="matches-top"><p>MATCHED PRODUCTS</p><nav className="source-filter" aria-label="플랫폼 필터"><span className={`filter-indicator at-${activeIndex}`} aria-hidden="true" />{filters.map(({ id, label }) => <button className={filter === id ? "active" : ""} key={id} onClick={() => setFilter(id)}>{label}</button>)}</nav></div><div className="match-grid">{visibleMatches.map((item) => <article className="match-card" key={item.id}><div className={`match-photo ${item.tone}`}><span>{item.source}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>)}</div></section></div></section>;
+
+  return <section className="test-search">
+    <div className="test-heading"><div><p>LOOKFIND / TEST SEARCH</p><h1>SIMILAR<br />LOOKS</h1></div></div>
+    <div className="test-controls">
+      <p className="test-control-label">YOUR PHOTO</p>
+      <div className="matches-controls">
+        <p className="test-control-label">MATCHED PRODUCTS</p>
+        <nav className="source-filter" aria-label="플랫폼 필터">
+          <span className={`filter-indicator at-${activeIndex}`} aria-hidden="true" />
+          {filters.map(({ id, label }) => <button className={filter === id ? "active" : ""} key={id} onClick={() => setFilter(id)}>{label}</button>)}
+        </nav>
+      </div>
+    </div>
+    <div className="test-layout">
+      <aside className="uploaded-column"><div className="uploaded-photo" style={{ backgroundImage: `url(${image ?? "/lookfind-hero.png"})` }} /><small>업로드한 이미지에서 상의·하의를 분석했어요.</small></aside>
+      <section className="matches-column"><div className="match-grid">{visibleMatches.map((item) => <article className="match-card" key={item.id}><div className={`match-photo ${item.tone}`}><span>{item.source}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>)}</div></section>
+    </div>
+  </section>;
 }
 
 function ProductCard({ item, saved, onFavorite }: { item: Product; saved: boolean; onFavorite: (id: string) => void }) {
