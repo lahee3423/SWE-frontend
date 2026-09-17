@@ -31,6 +31,12 @@
   border-top: 0;
 }
 
+.uploaded-column {
+  position: sticky;
+  top: 96px;
+  align-self: start;
+}
+
 .source-filter {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -71,6 +77,7 @@
 @media (max-width: 800px) {
   .test-controls { position: static; grid-template-columns: 1fr; gap: 14px; padding: 0 0 18px; border: 0; }
   .matches-controls { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .uploaded-column { position: static; }
   .source-filter { width: 320px; min-width: 320px; flex-basis: 320px; padding: 3px; }
   .source-filter button { padding: 10px 3px; font-size: 10px; }
   .filter-indicator { top: 3px; bottom: 3px; left: 9px; width: 66px; }
