@@ -25,6 +25,8 @@
   gap: 0;
   position: relative;
   width: 480px;
+  min-width: 480px;
+  flex: 0 0 480px;
   padding: 5px;
   border: 1px solid rgba(0, 26, 35, .15);
   border-radius: 999px;
@@ -58,7 +60,7 @@
   .matches-top { align-items: flex-start; }
   .uploaded-column { position: static; padding-top: 0; }
   .uploaded-photo { margin-top: 0; }
-  .source-filter { width: 320px; padding: 3px; }
+  .source-filter { width: 320px; min-width: 320px; flex-basis: 320px; padding: 3px; }
   .source-filter button { padding: 10px 3px; font-size: 10px; }
   .filter-indicator { top: 3px; bottom: 3px; left: 9px; width: 66px; }
   .filter-indicator.at-1 { transform: translateX(78.5px); }
