@@ -6,9 +6,17 @@ import { readFavorites, readHistory, writeFavorites, writeHistory } from "../api
 import { products } from "../constants/look-find";
 import type { Product, SearchHistory } from "../types/look-find";
 
-type Page = "home" | "history" | "favorites";
+type Page = "home" | "history" | "favorites" | "test";
 
 const won = (value: number) => `${new Intl.NumberFormat("ko-KR").format(value)}원`;
+const demoMatches = [
+  { id: "match-1", name: "오버핏 울 블레이저", brand: "MUSINSA STANDARD", price: "89,900원", source: "무신사", tone: "match-one" },
+  { id: "match-2", name: "빈티지 체크 자켓", brand: "시티브리즈", price: "78,000원", source: "지그재그", tone: "match-two" },
+  { id: "match-3", name: "루즈핏 테일러드 재킷", brand: "에이치", price: "62,500원", source: "에이블리", tone: "match-three" },
+  { id: "match-4", name: "오버사이즈 싱글 자켓", brand: "COVERNAT", price: "109,000원", source: "무신사", tone: "match-four" },
+  { id: "match-5", name: "체크 하프 재킷", brand: "오브제", price: "54,000원", source: "지그재그", tone: "match-five" },
+  { id: "match-6", name: "클래식 울 재킷", brand: "루즈핏", price: "72,900원", source: "에이블리", tone: "match-six" },
+];
 
 export default function LookFindApp() {
   const [page, setPage] = useState<Page>("home");
@@ -17,6 +25,8 @@ export default function LookFindApp() {
   const [favorites, setFavorites] = useState<string[]>(readFavorites);
   const [uploadMode, setUploadMode] = useState(false);
   const [isClosingUpload, setIsClosingUpload] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [sourceFilter, setSourceFilter] = useState("전체");
   const [analysisStage, setAnalysisStage] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -58,8 +68,10 @@ export default function LookFindApp() {
 
   function loadImage(file?: File) {
     if (!file) return;
+    setUploadedImage(URL.createObjectURL(file));
     setUploadMode(false);
     setIsDragging(false);
+    setPage("test");
   }
 
   function dropImage(event: DragEvent<HTMLDivElement>) {
@@ -94,7 +106,7 @@ export default function LookFindApp() {
     <header className={uploadMode ? "site-header upload-active" : "site-header"}>
       <button className="wordmark" onClick={() => setPage("home")}>LOOK<span>•</span>FIND</button>
       <nav aria-label="주 메뉴">
-        {([ ["home", "SEARCH"], ["history", "ARCHIVE"], ["favorites", "SAVED"] ] as const).map(([id, label]) =>
+        {([ ["home", "SEARCH"], ["history", "ARCHIVE"], ["favorites", "SAVED"], ["test", "TEST"] ] as const).map(([id, label]) =>
           <button className={page === id ? "active" : ""} key={id} onClick={() => setPage(id)}>{label}</button>)}
       </nav>
       <button className="account" onClick={() => setLoggedIn((current) => !current)}>{loggedIn ? "MY PAGE / LOGOUT" : "LOGIN"}</button>
@@ -110,9 +122,14 @@ export default function LookFindApp() {
         </div>
         <div className="hero-image"><Image src="/lookfind-hero.png" alt="LookFind 스타일 이미지" fill priority sizes="(max-width: 700px) 100vw, 50vw" /><div className={`analysis-layer stage-${analysisStage}`} aria-label="AI 의류 분석 표시"><div className="analysis-box shirt"><span>TOP</span><div className="analysis-crop crop-shirt"><small>TOP</small></div></div><div className="analysis-box pants"><span>PANTS</span><div className="analysis-crop crop-pants"><small>PANTS</small></div></div><div className="analysis-box boots"><span>BOOTS</span><div className="analysis-crop crop-boots"><small>BOOTS</small></div></div></div></div>
       </section>
-    </section> : page === "history" ? <History loggedIn={loggedIn} history={history} remove={(id) => setHistory((current) => { const next = current.filter((item) => item.id !== id); writeHistory(next); return next; })} clear={() => { setHistory([]); writeHistory([]); }} reopen={() => setPage("home")} /> : <Favorites loggedIn={loggedIn} items={products.filter((item) => favorites.includes(item.id))} favorites={favorites} onFavorite={toggleFavorite} />}
+    </section> : page === "history" ? <History loggedIn={loggedIn} history={history} remove={(id) => setHistory((current) => { const next = current.filter((item) => item.id !== id); writeHistory(next); return next; })} clear={() => { setHistory([]); writeHistory([]); }} reopen={() => setPage("home")} /> : page === "favorites" ? <Favorites loggedIn={loggedIn} items={products.filter((item) => favorites.includes(item.id))} favorites={favorites} onFavorite={toggleFavorite} /> : <SearchTestPage image={uploadedImage} filter={sourceFilter} setFilter={setSourceFilter} />}
     {uploadMode && <section className={isClosingUpload ? "upload-mode closing" : "upload-mode"} aria-modal="true" role="dialog"><button className="close-upload" onClick={closeUploadMode} aria-label="업로드 화면 닫기">×</button><div className="upload-content"><h2>UPLOAD PHOTO</h2><div className={isDragging ? "upload-finder dragging" : "upload-finder"} onDragOver={(event) => { event.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={dropImage}><span className="finder-corner top-left" /><span className="finder-corner top-right" /><span className="finder-corner bottom-left" /><span className="finder-corner bottom-right" /><span className="recording">● REC</span><p>사진을 이곳에 끌어다 놓거나 파일을 업로드 해주세요.</p><button className="upload-mode-button" onClick={() => fileInput.current?.click()}>SELECT FILE <span>↗</span></button><small>JPG, PNG · MAX 10MB</small></div></div></section>}
   </main>;
+}
+
+function SearchTestPage({ image, filter, setFilter }: { image: string | null; filter: string; setFilter: (filter: string) => void }) {
+  const visibleMatches = demoMatches.filter((item) => filter === "전체" || item.source === filter);
+  return <section className="test-search"><div className="test-heading"><div><p>LOOKFIND / TEST SEARCH</p><h1>SIMILAR<br />LOOKS</h1></div><span>AI VISUAL MATCHING</span></div><div className="test-layout"><aside className="uploaded-column"><p>YOUR PHOTO</p><div className="uploaded-photo" style={{ backgroundImage: `url(${image ?? "/lookfind-hero.png"})` }} /><small>업로드한 이미지에서 상의·하의를 분석했어요.</small></aside><section className="matches-column"><div className="matches-top"><div><p>MATCHED PRODUCTS</p><h2>비슷한 제품 <i>{visibleMatches.length}</i>개</h2></div><nav className="source-filter" aria-label="플랫폼 필터">{["전체", "무신사", "지그재그", "에이블리"].map((source) => <button className={filter === source ? "active" : ""} key={source} onClick={() => setFilter(source)}>{source}</button>)}</nav></div><div className="match-grid">{visibleMatches.map((item) => <article className="match-card" key={item.id}><div className={`match-photo ${item.tone}`}><span>{item.source}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>)}</div></section></div></section>;
 }
 
 function ProductCard({ item, saved, onFavorite }: { item: Product; saved: boolean; onFavorite: (id: string) => void }) {
