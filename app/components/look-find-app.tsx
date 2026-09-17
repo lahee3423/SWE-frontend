@@ -1,10 +1,10 @@
 "use client";
 
-import { ChangeEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import Image from "next/image";
 import { readFavorites, readHistory, writeFavorites, writeHistory } from "../apis/local-store";
 import { products } from "../constants/look-find";
-import type { Platform, Product, SearchHistory } from "../types/look-find";
+import type { Product, SearchHistory } from "../types/look-find";
 
 type Page = "home" | "history" | "favorites";
 
@@ -13,35 +13,15 @@ const won = (value: number) => `${new Intl.NumberFormat("ko-KR").format(value)}�
 export default function LookFindApp() {
   const [page, setPage] = useState<Page>("home");
   const [loggedIn, setLoggedIn] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [searched, setSearched] = useState(false);
-  const [platform, setPlatform] = useState<Platform | "전체">("전체");
-  const [sort, setSort] = useState<"similarity" | "price">("similarity");
   const [history, setHistory] = useState<SearchHistory[]>(readHistory);
   const [favorites, setFavorites] = useState<string[]>(readFavorites);
   const [uploadMode, setUploadMode] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
-  const listedProducts = useMemo(() => products
-    .filter((item) => platform === "전체" || item.platform === platform)
-    .sort((a, b) => sort === "price" ? a.price - b.price : b.similarity - a.similarity), [platform, sort]);
-
   function chooseImage(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-    setImageUrl(URL.createObjectURL(file));
-    setSearched(false);
     setUploadMode(false);
-  }
-
-  function search() {
-    if (!imageUrl) return fileInput.current?.click();
-    setSearched(true);
-    if (loggedIn) setHistory((current) => {
-      const next = [{ id: crypto.randomUUID(), label: "업로드한 상의 사진", searchedAt: "방금 전", count: 20 }, ...current];
-      writeHistory(next);
-      return next;
-    });
   }
 
   function toggleFavorite(id: string) {
@@ -69,6 +49,7 @@ export default function LookFindApp() {
 
     {page === "home" ? <section className="home">
       <section className="hero">
+        <input ref={fileInput} className="file-input" type="file" accept="image/*" onChange={chooseImage} />
         <div className="hero-copy">
           <h1>LOOKFIND</h1>
           <p>사진 한 장으로 원하는 스타일을 찾아보세요.<br />사진 속 옷을 AI가 하나씩 분석하고,<br />비슷한 디자인의 상품을 찾아드립니다.<br />무신사, 지그재그, 에이블리의 상품을 한눈에 비교하고<br />당신이 찾던 옷을 가장 쉽게 발견해보세요.</p>
@@ -76,40 +57,13 @@ export default function LookFindApp() {
         </div>
         <div className="hero-image"><Image src="/lookfind-hero.png" alt="LookFind 스타일 이미지" fill priority sizes="(max-width: 700px) 100vw, 50vw" /><div className="analysis-layer" aria-label="AI 의류 분석 표시"><div className="analysis-box shirt"><span>TOP</span></div><div className="analysis-box pants"><span>PANTS</span></div><div className="analysis-box boots"><span>BOOTS</span></div><div className="analysis-crop crop-shirt"><small>TOP</small></div><div className="analysis-crop crop-pants"><small>PANTS</small></div><div className="analysis-crop crop-boots"><small>BOOTS</small></div></div></div>
       </section>
-
-      <Runway />
-
-      <section className="search-section">
-        <div className="vertical-label">VISUAL SEARCH</div>
-        <div className="search-panel">
-          <div className="search-heading"><p>UPLOAD YOUR LOOK</p><h2>사진 속 상의를<br />찾아볼 준비가 되었나요?</h2></div>
-          <input ref={fileInput} className="file-input" type="file" accept="image/*" onChange={chooseImage} />
-          {imageUrl ? <div className="preview"><img src={imageUrl} alt="업로드한 검색 사진" /><button onClick={() => { setImageUrl(null); setSearched(false); }}>×</button></div> : <button className="dropzone" onClick={() => fileInput.current?.click()}><b>+</b><strong>상의 사진 업로드</strong><small>JPG, PNG · MAX 10MB</small></button>}
-          <button className="primary-button" onClick={search}>{imageUrl ? "SIMILAR LOOKS FIND" : "SELECT AN IMAGE"} <span>→</span></button>
-          <p className="disclaimer">얼굴과 배경은 제외하고 상의만 분석합니다.</p>
-        </div>
-      </section>
-
-      {searched && <Results items={listedProducts} platform={platform} setPlatform={setPlatform} sort={sort} setSort={setSort} favorites={favorites} onFavorite={toggleFavorite} />}
-    </section> : page === "history" ? <History loggedIn={loggedIn} history={history} remove={(id) => setHistory((current) => { const next = current.filter((item) => item.id !== id); writeHistory(next); return next; })} clear={() => { setHistory([]); writeHistory([]); }} reopen={() => { setPage("home"); setSearched(true); }} /> : <Favorites loggedIn={loggedIn} items={products.filter((item) => favorites.includes(item.id))} favorites={favorites} onFavorite={toggleFavorite} />}
+    </section> : page === "history" ? <History loggedIn={loggedIn} history={history} remove={(id) => setHistory((current) => { const next = current.filter((item) => item.id !== id); writeHistory(next); return next; })} clear={() => { setHistory([]); writeHistory([]); }} reopen={() => setPage("home")} /> : <Favorites loggedIn={loggedIn} items={products.filter((item) => favorites.includes(item.id))} favorites={favorites} onFavorite={toggleFavorite} />}
     {uploadMode && <section className="upload-mode" aria-modal="true" role="dialog"><button className="close-upload" onClick={() => setUploadMode(false)} aria-label="업로드 화면 닫기">×</button><div><p>LOOKFIND / IMAGE SEARCH</p><h2>YOUR<br />PHOTO</h2><button className="upload-mode-button" onClick={() => fileInput.current?.click()}>PHOTO UPLOAD <span>↗</span></button><small>JPG, PNG · MAX 10MB</small></div></section>}
   </main>;
 }
 
-function Results({ items, platform, setPlatform, sort, setSort, favorites, onFavorite }: { items: Product[]; platform: Platform | "전체"; setPlatform: (value: Platform | "전체") => void; sort: "similarity" | "price"; setSort: (value: "similarity" | "price") => void; favorites: string[]; onFavorite: (id: string) => void }) {
-  return <section className="results"><div className="result-head"><div><p>MATCHED COLLECTION</p><h2>LOOKS LIKE <i>YOU</i></h2></div><span>20 ITEMS FOUND</span></div><div className="filters"><div>{(["전체", "무신사", "에이블리"] as const).map((item) => <button className={platform === item ? "active" : ""} key={item} onClick={() => setPlatform(item)}>{item}</button>)}</div><select value={sort} onChange={(event) => setSort(event.target.value as "similarity" | "price")}><option value="similarity">유사도순</option><option value="price">낮은 가격순</option></select></div><div className="product-grid">{items.map((item) => <ProductCard item={item} key={item.id} saved={favorites.includes(item.id)} onFavorite={onFavorite} />)}</div></section>;
-}
-
 function ProductCard({ item, saved, onFavorite }: { item: Product; saved: boolean; onFavorite: (id: string) => void }) {
   return <article className="product-card"><div className={`product-visual ${item.tone}`}><span>{item.similarity}% MATCH</span><button className={saved ? "saved" : ""} onClick={() => onFavorite(item.id)}>{saved ? "♥" : "♡"}</button></div><p>{item.platform}</p><h3>{item.name}</h3><small>{item.brand}</small><strong>{won(item.price)}</strong><a href="https://www.musinsa.com" target="_blank" rel="noreferrer">VIEW ITEM ↗</a></article>;
-}
-
-function Runway() {
-  const looks = ["LOOK 01", "LOOK 02", "LOOK 03", "LOOK 04", "LOOK 05", "LOOK 06"];
-  return <section className="runway" aria-label="새로운 의류 컬렉션">
-    <div className="runway-head"><span>NEW ARRIVALS</span><h2>SCROLLING<br /><i>STYLES</i></h2><span>2026 COLLECTION</span></div>
-    {["first", "second"].map((row) => <div className={`marquee ${row}`} key={row}><div className="marquee-track">{[...looks, ...looks].map((look, index) => <article className={`look-placeholder look-${index % 6}`} key={`${row}-${index}`}><div><span>{look}</span></div><small>IMAGE COMING SOON</small></article>)}</div></div>)}
-  </section>;
 }
 
 function History({ loggedIn, history, remove, clear, reopen }: { loggedIn: boolean; history: SearchHistory[]; remove: (id: string) => void; clear: () => void; reopen: () => void }) {
