@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { readFavorites, readHistory, writeFavorites, writeHistory } from "../apis/local-store";
 import { products } from "../constants/look-find";
 import type { Platform, Product, SearchHistory } from "../types/look-find";
@@ -62,10 +63,15 @@ export default function LookFindApp() {
 
     {page === "home" ? <section className="home">
       <section className="hero">
-        <div className="hero-title"><p>IMAGE-BASED FASHION SEARCH</p><h1>LOOK<br />FIND</h1><span>01 — 03</span></div>
-        <div className="fashion-figure" aria-hidden="true"><i /><b /><em /></div>
-        <div className="hero-copy"><p>YOUR LOOK,<br />FOUND.</p><small>한 장의 사진으로<br />당신의 스타일과 닮은 옷을 찾아보세요.</small><button onClick={() => fileInput.current?.click()}>START SEARCH <span>→</span></button></div>
+        <div className="hero-copy">
+          <h1>LOOKFIND</h1>
+          <p>사진 한 장으로 원하는 스타일을 찾아보세요.<br />사진 속 옷을 AI가 하나씩 분석하고,<br />비슷한 디자인의 상품을 찾아드립니다.<br />무신사, 지그재그, 에이블리의 상품을 한눈에 비교하고<br />당신이 찾던 옷을 가장 쉽게 발견해보세요.</p>
+          <button onClick={() => fileInput.current?.click()}>PHOTO UPLOAD <span>↗</span></button>
+        </div>
+        <div className="hero-image"><Image src="/lookfind-hero.png" alt="LookFind 스타일 이미지" fill priority sizes="(max-width: 700px) 100vw, 50vw" /></div>
       </section>
+
+      <Runway />
 
       <section className="search-section">
         <div className="vertical-label">VISUAL SEARCH</div>
@@ -89,6 +95,14 @@ function Results({ items, platform, setPlatform, sort, setSort, favorites, onFav
 
 function ProductCard({ item, saved, onFavorite }: { item: Product; saved: boolean; onFavorite: (id: string) => void }) {
   return <article className="product-card"><div className={`product-visual ${item.tone}`}><span>{item.similarity}% MATCH</span><button className={saved ? "saved" : ""} onClick={() => onFavorite(item.id)}>{saved ? "♥" : "♡"}</button></div><p>{item.platform}</p><h3>{item.name}</h3><small>{item.brand}</small><strong>{won(item.price)}</strong><a href="https://www.musinsa.com" target="_blank" rel="noreferrer">VIEW ITEM ↗</a></article>;
+}
+
+function Runway() {
+  const looks = ["LOOK 01", "LOOK 02", "LOOK 03", "LOOK 04", "LOOK 05", "LOOK 06"];
+  return <section className="runway" aria-label="새로운 의류 컬렉션">
+    <div className="runway-head"><span>NEW ARRIVALS</span><h2>SCROLLING<br /><i>STYLES</i></h2><span>2026 COLLECTION</span></div>
+    {["first", "second"].map((row) => <div className={`marquee ${row}`} key={row}><div className="marquee-track">{[...looks, ...looks].map((look, index) => <article className={`look-placeholder look-${index % 6}`} key={`${row}-${index}`}><div><span>{look}</span></div><small>IMAGE COMING SOON</small></article>)}</div></div>)}
+  </section>;
 }
 
 function History({ loggedIn, history, remove, clear, reopen }: { loggedIn: boolean; history: SearchHistory[]; remove: (id: string) => void; clear: () => void; reopen: () => void }) {
