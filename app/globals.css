@@ -44,3 +44,5 @@
 .upload-mode.closing .upload-content,.upload-mode.closing .close-upload{animation-duration:.5s;animation-timing-function:linear}
 .upload-mode.closing{animation-duration:.65s}.upload-mode.closing .upload-content,.upload-mode.closing .close-upload{animation:none;opacity:1;transform:none}
 .upload-mode.closing{animation-timing-function:linear}
+/* Let the upload reveal flow underneath a transparent header */
+.site-header.upload-active{background:transparent}.upload-mode{inset:0}.upload-mode .close-upload{top:86px}
