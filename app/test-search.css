@@ -3,6 +3,7 @@
 
 /* Keep the product heading fixed; bring the left photo group down to its baseline. */
 .uploaded-column { padding-top: 30px; }
+.uploaded-photo { margin-top: 34px; }
 
 .source-filter {
   display: grid;
@@ -42,6 +43,7 @@
 @media (max-width: 800px) {
   .matches-top { align-items: flex-start; }
   .uploaded-column { padding-top: 0; }
+  .uploaded-photo { margin-top: 0; }
   .source-filter { width: 320px; padding: 3px; }
   .source-filter button { padding: 10px 3px; font-size: 10px; }
   .filter-indicator { top: 3px; bottom: 3px; left: 9px; width: 66px; }
