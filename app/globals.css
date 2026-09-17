@@ -43,3 +43,4 @@
 .upload-mode.closing{animation-duration:.5s}
 .upload-mode.closing .upload-content,.upload-mode.closing .close-upload{animation-duration:.5s;animation-timing-function:linear}
 .upload-mode.closing{animation-duration:1.35s}.upload-mode.closing .upload-content,.upload-mode.closing .close-upload{animation:none;opacity:1;transform:none}
+.upload-mode.closing{animation-timing-function:linear}
