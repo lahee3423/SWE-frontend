@@ -87,7 +87,7 @@ export default function LookFindApp() {
     window.setTimeout(() => {
       setUploadMode(false);
       setIsClosingUpload(false);
-    }, 1350);
+    }, 1000);
   }
 
   return <main className="lookfind">
