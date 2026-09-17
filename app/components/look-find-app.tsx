@@ -19,6 +19,7 @@ export default function LookFindApp() {
   const [sort, setSort] = useState<"similarity" | "price">("similarity");
   const [history, setHistory] = useState<SearchHistory[]>(readHistory);
   const [favorites, setFavorites] = useState<string[]>(readFavorites);
+  const [uploadMode, setUploadMode] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const listedProducts = useMemo(() => products
@@ -30,6 +31,7 @@ export default function LookFindApp() {
     if (!file) return;
     setImageUrl(URL.createObjectURL(file));
     setSearched(false);
+    setUploadMode(false);
   }
 
   function search() {
@@ -51,6 +53,10 @@ export default function LookFindApp() {
     });
   }
 
+  function openUploadMode() {
+    setUploadMode(true);
+  }
+
   return <main className="lookfind">
     <header className="site-header">
       <button className="wordmark" onClick={() => setPage("home")}>LOOK<span>•</span>FIND</button>
@@ -66,7 +72,7 @@ export default function LookFindApp() {
         <div className="hero-copy">
           <h1>LOOKFIND</h1>
           <p>사진 한 장으로 원하는 스타일을 찾아보세요.<br />사진 속 옷을 AI가 하나씩 분석하고,<br />비슷한 디자인의 상품을 찾아드립니다.<br />무신사, 지그재그, 에이블리의 상품을 한눈에 비교하고<br />당신이 찾던 옷을 가장 쉽게 발견해보세요.</p>
-          <button onClick={() => fileInput.current?.click()}>PHOTO UPLOAD <span>↗</span></button>
+          <button onClick={openUploadMode}>PHOTO UPLOAD <span>↗</span></button>
         </div>
         <div className="hero-image"><Image src="/lookfind-hero.png" alt="LookFind 스타일 이미지" fill priority sizes="(max-width: 700px) 100vw, 50vw" /></div>
       </section>
@@ -86,6 +92,7 @@ export default function LookFindApp() {
 
       {searched && <Results items={listedProducts} platform={platform} setPlatform={setPlatform} sort={sort} setSort={setSort} favorites={favorites} onFavorite={toggleFavorite} />}
     </section> : page === "history" ? <History loggedIn={loggedIn} history={history} remove={(id) => setHistory((current) => { const next = current.filter((item) => item.id !== id); writeHistory(next); return next; })} clear={() => { setHistory([]); writeHistory([]); }} reopen={() => { setPage("home"); setSearched(true); }} /> : <Favorites loggedIn={loggedIn} items={products.filter((item) => favorites.includes(item.id))} favorites={favorites} onFavorite={toggleFavorite} />}
+    {uploadMode && <section className="upload-mode" aria-modal="true" role="dialog"><button className="close-upload" onClick={() => setUploadMode(false)} aria-label="업로드 화면 닫기">×</button><div><p>LOOKFIND / IMAGE SEARCH</p><h2>YOUR<br />PHOTO</h2><button className="upload-mode-button" onClick={() => fileInput.current?.click()}>PHOTO UPLOAD <span>↗</span></button><small>JPG, PNG · MAX 10MB</small></div></section>}
   </main>;
 }
 
