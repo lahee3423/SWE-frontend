@@ -74,7 +74,7 @@ export default function LookFindApp() {
           <p>사진 한 장으로 원하는 스타일을 찾아보세요.<br />사진 속 옷을 AI가 하나씩 분석하고,<br />비슷한 디자인의 상품을 찾아드립니다.<br />무신사, 지그재그, 에이블리의 상품을 한눈에 비교하고<br />당신이 찾던 옷을 가장 쉽게 발견해보세요.</p>
           <button onClick={openUploadMode}>PHOTO UPLOAD <span>↗</span></button>
         </div>
-        <div className="hero-image"><Image src="/lookfind-hero.png" alt="LookFind 스타일 이미지" fill priority sizes="(max-width: 700px) 100vw, 50vw" /><div className="analysis-layer" aria-label="AI 의류 분석 표시"><div className="analysis-box shirt"><span>TOP / 98.4%</span></div><div className="analysis-box pants"><span>PANTS / 96.1%</span></div><div className="analysis-box boots"><span>BOOTS / 94.7%</span></div><div className="analysis-crop crop-shirt"><small>TOP</small></div><div className="analysis-crop crop-pants"><small>PANTS</small></div><div className="analysis-crop crop-boots"><small>BOOTS</small></div></div></div>
+        <div className="hero-image"><Image src="/lookfind-hero.png" alt="LookFind 스타일 이미지" fill priority sizes="(max-width: 700px) 100vw, 50vw" /><div className="analysis-layer" aria-label="AI 의류 분석 표시"><div className="analysis-box shirt"><span>TOP</span></div><div className="analysis-box pants"><span>PANTS</span></div><div className="analysis-box boots"><span>BOOTS</span></div><div className="analysis-crop crop-shirt"><small>TOP</small></div><div className="analysis-crop crop-pants"><small>PANTS</small></div><div className="analysis-crop crop-boots"><small>BOOTS</small></div></div></div>
       </section>
 
       <Runway />
