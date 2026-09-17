@@ -1,8 +1,6 @@
 /* Test-search navigation overrides kept separate from user-edited global styles. */
 .test-controls {
-  position: sticky;
-  top: 0;
-  z-index: 5;
+  position: static;
   display: grid;
   grid-template-columns: minmax(250px, 30%) 1fr;
   gap: 5vw;
@@ -27,14 +25,41 @@
 }
 
 .test-layout {
+  flex: 1;
+  min-height: 0;
   padding-top: 0;
   border-top: 0;
+  overflow: hidden;
 }
 
 .uploaded-column {
-  position: sticky;
-  top: 96px;
+  position: static;
   align-self: start;
+}
+
+.test-search {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 68px);
+  min-height: 0;
+  padding-bottom: 28px;
+  overflow: hidden;
+}
+
+.matches-column,
+.match-grid {
+  min-height: 0;
+}
+
+.matches-column { overflow: hidden; }
+
+.match-grid {
+  height: 100%;
+  margin-top: 0;
+  padding: 0 8px 18px 0;
+  overflow-y: auto;
+  scrollbar-color: var(--line) transparent;
+  scrollbar-width: thin;
 }
 
 .source-filter {
@@ -75,9 +100,10 @@
 .filter-indicator.at-3 { transform: translateX(352.5px); }
 
 @media (max-width: 800px) {
-  .test-controls { position: static; grid-template-columns: 1fr; gap: 14px; padding: 0 0 18px; border: 0; }
+  .test-search { display: block; height: auto; min-height: calc(100vh - 68px); padding-bottom: 60px; overflow: visible; }
+  .test-controls { grid-template-columns: 1fr; gap: 14px; padding: 0 0 18px; border: 0; }
   .matches-controls { align-items: flex-start; flex-direction: column; gap: 10px; }
-  .uploaded-column { position: static; }
+  .test-layout, .matches-column, .match-grid { height: auto; overflow: visible; }
   .source-filter { width: 320px; min-width: 320px; flex-basis: 320px; padding: 3px; }
   .source-filter button { padding: 10px 3px; font-size: 10px; }
   .filter-indicator { top: 3px; bottom: 3px; left: 9px; width: 66px; }
