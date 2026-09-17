@@ -1,5 +1,8 @@
 /* Test-search navigation overrides kept separate from user-edited global styles. */
-.matches-top { align-items: flex-start; }
+.matches-top { align-items: flex-end; }
+
+/* Keep the product heading fixed; bring the left photo group down to its baseline. */
+.uploaded-column { padding-top: 30px; }
 
 .source-filter {
   display: grid;
@@ -31,15 +34,17 @@
 }
 
 .source-filter button.active { background: transparent; color: var(--ink); box-shadow: none; transform: none; animation: none; }
-.filter-indicator { position: absolute; z-index: 0; top: 5px; bottom: 5px; left: 22px; width: 78px; border-radius: 999px; background: #ebf1f2; box-shadow: inset 0 1px 2px rgba(255,255,255,.95), inset 0 -1px 2px rgba(0,26,35,.1), 0 6px 12px rgba(0,26,35,.1); transition: transform .42s cubic-bezier(.2,.85,.25,1); }
+.filter-indicator { position: absolute; z-index: 0; top: 5px; bottom: 5px; left: 16px; width: 96px; border-radius: 999px; background: #ebf1f2; box-shadow: inset 0 1px 2px rgba(255,255,255,.95), inset 0 -1px 2px rgba(0,26,35,.1), 0 6px 12px rgba(0,26,35,.1); transition: transform .42s cubic-bezier(.2,.85,.25,1); }
 .filter-indicator.at-1 { transform: translateX(117.5px); }
 .filter-indicator.at-2 { transform: translateX(235px); }
 .filter-indicator.at-3 { transform: translateX(352.5px); }
 
 @media (max-width: 800px) {
+  .matches-top { align-items: flex-start; }
+  .uploaded-column { padding-top: 0; }
   .source-filter { width: 320px; padding: 3px; }
   .source-filter button { padding: 10px 3px; font-size: 10px; }
-  .filter-indicator { top: 3px; bottom: 3px; left: 12px; width: 56px; }
+  .filter-indicator { top: 3px; bottom: 3px; left: 9px; width: 66px; }
   .filter-indicator.at-1 { transform: translateX(78.5px); }
   .filter-indicator.at-2 { transform: translateX(157px); }
   .filter-indicator.at-3 { transform: translateX(235.5px); }
