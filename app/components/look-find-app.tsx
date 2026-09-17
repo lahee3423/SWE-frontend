@@ -58,7 +58,7 @@ export default function LookFindApp() {
   }
 
   return <main className="lookfind">
-    <header className="site-header">
+    <header className={uploadMode ? "site-header upload-active" : "site-header"}>
       <button className="wordmark" onClick={() => setPage("home")}>LOOK<span>•</span>FIND</button>
       <nav aria-label="주 메뉴">
         {([ ["home", "SEARCH"], ["history", "ARCHIVE"], ["favorites", "SAVED"] ] as const).map(([id, label]) =>
