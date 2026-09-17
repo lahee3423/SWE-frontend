@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./test-search.css";
 
 export const metadata: Metadata = {
   title: "LookFind | 이미지 기반 유사 의류 검색",
