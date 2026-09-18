@@ -219,7 +219,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
         const isDepartingCard = isSourceSwap && index >= departingStart;
         const isAdditionalCard = isSourceSwap && !pendingFilter && index >= swapPreviousCount;
         const cardKey = isSourceSwap ? `swap-slot-${index}` : item.id;
-        const animationDelay = isAdditionalCard ? `${(index - swapPreviousCount) * 65}ms` : isDepartingCard ? `${(index - departingStart) * 65}ms` : undefined;
+        const animationDelay = isAdditionalCard ? `${(index - swapPreviousCount) * 65}ms` : undefined;
         return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap && !isAdditionalCard && !isDepartingCard ? "source-flipping" : ""} ${isAdditionalCard ? "source-floating" : ""} ${isDepartingCard ? "source-departing" : ""}`} key={cardKey} style={{ animationDelay }} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
       })}</div></section>
     </div>
