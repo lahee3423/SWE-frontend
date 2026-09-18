@@ -83,7 +83,7 @@
   transform: scale(.96);
 }
 
-.match-card.leaving.source-swap { animation: source-card-collapse .32s cubic-bezier(.45, 0, .75, .2) both; }
+.match-card.leaving.source-swap { animation: source-card-collapse .42s cubic-bezier(.45, 0, .75, .2) both; }
 .match-card.source-entering { animation: source-card-enter .48s cubic-bezier(.2, .8, .25, 1) both; }
 
 .match-photo {
@@ -105,13 +105,15 @@
 .match-card strong { margin: 10px 3px 3px; }
 
 @keyframes source-card-enter {
-  from { opacity: 0; transform: translateY(46px) scale(.96) rotate(-.8deg); }
+  from { opacity: 1; transform: translateY(46px) scale(1) rotate(-.8deg); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes source-card-collapse {
-  from { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
-  to { opacity: 0; transform: translateY(46px) scale(.96) rotate(1.2deg); }
+  0% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+  78% { opacity: 1; transform: translateY(var(--collapse-shift)) scale(1) rotate(1.2deg); }
+  92% { opacity: 1; transform: translateY(var(--collapse-shift)) scale(1) rotate(1.2deg); }
+  100% { opacity: 0; transform: translateY(var(--collapse-shift)) scale(1) rotate(1.2deg); }
 }
 
 

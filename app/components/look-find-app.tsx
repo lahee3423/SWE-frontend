@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, DragEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ChangeEvent, DragEvent, type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { readFavorites, readHistory, writeFavorites, writeHistory } from "../apis/local-store";
 import { products } from "../constants/look-find";
@@ -171,7 +171,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   const changeFilter = (nextFilter: string) => {
     if (nextFilter === filter || pendingFilter || isSourceSwap) return;
     const sourceSwap = displayedFilter !== "all" && nextFilter !== "all";
-    const swapDelay = sourceSwap ? 740 : 180;
+    const swapDelay = sourceSwap ? 850 : 180;
     cardRefs.current.forEach((card, id) => previousCardPositions.current.set(id, card.getBoundingClientRect()));
     setIsSourceSwap(sourceSwap);
     setPendingFilter(nextFilter);
@@ -201,7 +201,10 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
         const isLeaving = Boolean(pendingFilter && pendingFilter !== "all" && item.source !== pendingFilter);
         const isEntering = isSourceSwap && !pendingFilter && displayedFilter === filter;
         const animationDelay = isLeaving || isEntering ? `${index * 65}ms` : undefined;
-        return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap ? "source-swap" : ""} ${isEntering ? "source-entering" : ""}`} key={item.id} style={{ animationDelay }} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
+        const lastRow = Math.floor((visibleMatches.length - 1) / 3);
+        const collapseShift = isLeaving ? `${(lastRow - Math.floor(index / 3)) * 285 + 22}px` : undefined;
+        const cardStyle = { animationDelay, "--collapse-shift": collapseShift } as CSSProperties;
+        return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap ? "source-swap" : ""} ${isEntering ? "source-entering" : ""}`} key={item.id} style={cardStyle} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
       })}</div></section>
     </div>
   </section>;
