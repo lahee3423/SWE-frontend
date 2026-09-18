@@ -32,6 +32,9 @@ const demoMatches = [
   { id: "match-19", name: "텍스처 울 셋업 자켓", brand: "SPAO", price: "79,900원", source: "무신사", tone: "match-four" },
   { id: "match-20", name: "클래식 라인 재킷", brand: "에프앤디", price: "71,000원", source: "지그재그", tone: "match-five" },
   { id: "match-21", name: "소프트 라인 블레이저", brand: "원로그", price: "84,000원", source: "에이블리", tone: "match-six" },
+  { id: "match-22", name: "스트레이트 울 블레이저", brand: "난닝구", price: "68,000원", source: "에이블리", tone: "match-one" },
+  { id: "match-23", name: "워시드 코튼 재킷", brand: "블랙업", price: "73,500원", source: "에이블리", tone: "match-three" },
+  { id: "match-24", name: "미니멀 싱글 자켓", brand: "데일리쥬", price: "79,000원", source: "에이블리", tone: "match-four" },
 ];
 
 export default function LookFindApp() {
