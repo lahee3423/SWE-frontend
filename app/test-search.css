@@ -51,12 +51,12 @@
   min-height: 0;
 }
 
-.matches-column { overflow: hidden; }
+.matches-column { overflow: visible; }
 
 .match-grid {
-  height: 100%;
-  margin-top: 0;
-  padding: 0 8px 18px 0;
+  height: calc(100% + 100px);
+  margin-top: -100px;
+  padding: 100px 8px 18px 0;
   overflow-y: auto;
   perspective: 1200px;
   scrollbar-color: var(--line) transparent;
