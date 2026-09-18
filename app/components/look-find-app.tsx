@@ -43,8 +43,9 @@ export default function LookFindApp() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [history, setHistory] = useState<SearchHistory[]>(() => {
     const storedHistory = readHistory();
-    const hasLegacyExamples = storedHistory.length === 3 && storedHistory.every((item, index) => item.id === `h${index + 1}`);
-    return !storedHistory.length || hasLegacyExamples ? initialHistory : storedHistory;
+    const restoredHistory = new Map(initialHistory.map((item) => [item.id, item]));
+    storedHistory.forEach((item) => restoredHistory.set(item.id, item));
+    return Array.from(restoredHistory.values());
   });
   const [clearedHistory, setClearedHistory] = useState<SearchHistory[] | null>(null);
   const [favorites, setFavorites] = useState<string[]>(() => {
@@ -272,20 +273,48 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
 
 function History({ loggedIn, history, remove, clear, restore, canRestore, reopen }: { loggedIn: boolean; history: SearchHistory[]; remove: (id: string) => void; clear: () => void; restore: () => void; canRestore: boolean; reopen: () => void }) {
   const [isClearing, setIsClearing] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const cardRefs = useRef(new Map<string, HTMLElement>());
+  const previousCardPositions = useRef(new Map<string, DOMRect>());
+
+  useLayoutEffect(() => {
+    if (!previousCardPositions.current.size) return;
+    cardRefs.current.forEach((card, id) => {
+      const previous = previousCardPositions.current.get(id);
+      if (!previous) return;
+      const next = card.getBoundingClientRect();
+      const x = previous.left - next.left;
+      const y = previous.top - next.top;
+      if (x || y) card.animate([{ transform: `translate(${x}px, ${y}px)` }, { transform: "translate(0, 0)" }], { duration: 360, easing: "cubic-bezier(.2, .8, .25, 1)" });
+    });
+    previousCardPositions.current.clear();
+  }, [history]);
+
   const clearWithAnimation = () => {
-    if (!history.length || isClearing) return;
+    if (!history.length || isClearing || removingId) return;
     setIsClearing(true);
     window.setTimeout(() => {
       clear();
       setIsClearing(false);
     }, 700);
   };
+  const removeWithAnimation = (id: string) => {
+    if (isClearing || removingId) return;
+    setRemovingId(id);
+    window.setTimeout(() => {
+      cardRefs.current.forEach((card, cardId) => {
+        if (cardId !== id) previousCardPositions.current.set(cardId, card.getBoundingClientRect());
+      });
+      remove(id);
+      setRemovingId(null);
+    }, 300);
+  };
   if (!loggedIn) return <MemberGate title="검색 기록은 로그인 후 저장돼요" text="로그인하면 이전에 검색한 사진과 결과를 다시 확인할 수 있어요." />;
   return <section className="collection-page">
-    <div className="collection-heading"><h1>ARCHIVE</h1><div className="collection-actions"><button className="collection-action" onClick={clearWithAnimation} disabled={!history.length || isClearing}>CLEAR ALL <span>↗</span></button><button className="collection-return" onClick={restore} disabled={!canRestore || isClearing}>RETURN <span>↶</span></button></div></div>
-    {history.length ? <div className={isClearing ? "archive-grid is-clearing" : "archive-grid"}>{history.map((item, index) => <article className={`archive-card archive-tone-${index % 3}`} key={item.id} style={isClearing ? { animationDelay: `${index * 42}ms` } : undefined}>
+    <div className="collection-heading"><h1>ARCHIVE</h1><div className="collection-actions"><button className="collection-action" onClick={clearWithAnimation} disabled={!history.length || isClearing || Boolean(removingId)}>CLEAR ALL <span>↗</span></button><button className="collection-return" onClick={restore} disabled={!canRestore || isClearing || Boolean(removingId)}>RETURN <span>↶</span></button></div></div>
+    {history.length ? <div className={isClearing ? "archive-grid is-clearing" : "archive-grid"}>{history.map((item, index) => <article className={`archive-card archive-tone-${index % 3} ${removingId === item.id ? "is-removing" : ""}`} key={item.id} style={isClearing ? { animationDelay: `${index * 42}ms` } : undefined} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}>
       <button className="archive-open" onClick={reopen}><div className="archive-visual saved-visual"><span>SEARCH 0{index + 1}</span></div><div className="archive-info"><h2>{item.label}</h2><p>{item.searchedAt}</p><strong>{item.count} MATCHES</strong></div></button>
-      <button className="archive-remove" aria-label={`${item.label} 삭제`} onClick={() => remove(item.id)}>×</button>
+      <button className="archive-remove" aria-label={`${item.label} 삭제`} onClick={() => removeWithAnimation(item.id)} disabled={isClearing || Boolean(removingId)}>×</button>
     </article>)}</div> : <p className="collection-empty">저장된 검색 이력이 없습니다.</p>}
   </section>;
 }
