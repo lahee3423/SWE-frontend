@@ -179,7 +179,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
     filterTimer.current = window.setTimeout(() => {
       setDisplayedFilter(nextFilter);
       setPendingFilter(null);
-      if (sourceSwap) window.setTimeout(() => setIsSourceSwap(false), 920);
+      if (sourceSwap) window.setTimeout(() => setIsSourceSwap(false), 1_050);
     }, swapDelay);
   };
 
