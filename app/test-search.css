@@ -7,7 +7,7 @@
   align-items: center;
   padding: 20px 0 42px;
   border-top: 1px solid var(--ink);
-  background: var(--paper);
+  background: transparent;
 }
 
 .test-control-label {
