@@ -9,6 +9,7 @@ import type { Product, SearchHistory } from "../types/look-find";
 type Page = "home" | "history" | "favorites" | "test";
 
 const won = (value: number) => `${new Intl.NumberFormat("ko-KR").format(value)}원`;
+const sourceLabels: Record<string, string> = { "무신사": "MUSINSA", "지그재그": "ZIGZAG", "에이블리": "ABLY" };
 const demoMatches = [
   { id: "match-1", name: "오버핏 울 블레이저", brand: "MUSINSA STANDARD", price: "89,900원", source: "무신사", tone: "match-one" },
   { id: "match-2", name: "빈티지 체크 자켓", brand: "시티브리즈", price: "78,000원", source: "지그재그", tone: "match-two" },
@@ -160,7 +161,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
     </div>
     <div className="test-layout">
       <aside className="uploaded-column"><div className="uploaded-photo" style={{ backgroundImage: `url(${image ?? "/lookfind-hero.png"})` }} /><small>업로드한 이미지에서 상의·하의를 분석했어요.</small></aside>
-      <section className="matches-column"><div className="match-grid">{visibleMatches.map((item) => <article className="match-card" key={item.id}><div className={`match-photo ${item.tone}`}><span>{item.source}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>)}</div></section>
+      <section className="matches-column"><div className="match-grid">{visibleMatches.map((item) => <article className="match-card" key={item.id}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>)}</div></section>
     </div>
   </section>;
 }

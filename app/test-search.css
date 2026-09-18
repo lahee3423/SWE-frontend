@@ -85,6 +85,8 @@
 }
 
 .match-photo span {
+  background: var(--paper);
+  color: var(--ink);
   border-radius: 6px;
   box-shadow: 0 2px 4px rgba(0, 26, 35, .12);
 }
