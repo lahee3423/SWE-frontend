@@ -1,6 +1,7 @@
 /* Test-search navigation overrides kept separate from user-edited global styles. */
 .test-controls {
-  position: static;
+  position: relative;
+  z-index: 10;
   display: grid;
   grid-template-columns: minmax(250px, 30%) 1fr;
   gap: 5vw;

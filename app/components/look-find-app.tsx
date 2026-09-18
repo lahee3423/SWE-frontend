@@ -185,6 +185,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   };
 
   return <section className="test-search">
+    <div className="test-heading"><div><p>LOOKFIND / TEST SEARCH</p><h1>SIMILAR LOOKS</h1></div></div>
     <div className="test-controls">
       <p className="test-control-label">YOUR PHOTO</p>
       <div className="matches-controls">
@@ -195,7 +196,6 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
         </nav>
       </div>
     </div>
-    <div className="test-heading"><div><p>LOOKFIND / TEST SEARCH</p><h1>SIMILAR LOOKS</h1></div></div>
     <div className="test-layout">
       <aside className="uploaded-column"><div className="uploaded-photo" style={{ backgroundImage: `url(${image ?? "/lookfind-hero.png"})` }} /><small>업로드한 이미지에서 상의·하의를 분석했어요.</small></aside>
       <section className="matches-column"><div className="match-grid">{visibleMatches.map((item, index) => {
