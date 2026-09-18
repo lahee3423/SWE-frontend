@@ -157,8 +157,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   const cardRefs = useRef(new Map<string, HTMLElement>());
   const previousCardPositions = useRef(new Map<string, DOMRect>());
   const filterTimer = useRef<number | null>(null);
-  const productScrollTop = useRef(0);
-  const keepProductsHeadingHidden = useRef(false);
+  const matchGridRef = useRef<HTMLDivElement>(null);
   const visibleMatches = demoMatches.filter((item) => displayedFilter === "all" || item.source === displayedFilter);
   const displayMatches = isSourceSwap && !pendingFilter ? [...visibleMatches, ...departingCards] : visibleMatches;
   const activeIndex = filters.findIndex(({ id }) => id === filter);
@@ -188,7 +187,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
       setSwapPreviousCount(visibleMatches.length);
       setDepartingCards(nextMatches.length < visibleMatches.length ? visibleMatches.slice(nextMatches.length) : []);
     } else setDepartingCards([]);
-    if (!isProductsHeadingVisible) keepProductsHeadingHidden.current = true;
+    matchGridRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     setIsSourceSwap(sourceSwap);
     setPendingFilter(nextFilter);
     setFilter(nextFilter);
@@ -213,13 +212,14 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
     </div>
     <div className="test-layout">
       <aside className="uploaded-column"><div className="uploaded-photo" style={{ backgroundImage: `url(${image ?? "/lookfind-hero.png"})` }} /><small>업로드한 이미지에서 상의·하의를 분석했어요.</small></aside>
-      <section className="matches-column"><div className="match-grid" onWheel={(event) => { if (event.deltaY < 0) keepProductsHeadingHidden.current = false; }} onScroll={(event) => { const nextScrollTop = event.currentTarget.scrollTop; if (keepProductsHeadingHidden.current) { productScrollTop.current = nextScrollTop; setIsProductsHeadingVisible(false); return; } setIsProductsHeadingVisible(nextScrollTop <= productScrollTop.current || nextScrollTop < 12); productScrollTop.current = nextScrollTop; }}>{displayMatches.map((item, index) => {
+      <section className="matches-column"><div className="match-grid" ref={matchGridRef} onScroll={(event) => setIsProductsHeadingVisible(event.currentTarget.scrollTop < 2)}>{displayMatches.map((item, index) => {
         const isLeaving = !isSourceSwap && Boolean(pendingFilter && pendingFilter !== "all" && item.source !== pendingFilter);
         const pendingMatchCount = pendingFilter ? demoMatches.filter((match) => match.source === pendingFilter).length : visibleMatches.length;
-        const isDepartingCard = isSourceSwap && index >= (pendingFilter ? pendingMatchCount : visibleMatches.length);
+        const departingStart = pendingFilter ? pendingMatchCount : visibleMatches.length;
+        const isDepartingCard = isSourceSwap && index >= departingStart;
         const isAdditionalCard = isSourceSwap && !pendingFilter && index >= swapPreviousCount;
         const cardKey = isSourceSwap ? `swap-slot-${index}` : item.id;
-        const animationDelay = isAdditionalCard ? `${(index - swapPreviousCount) * 65}ms` : isDepartingCard ? `${(index - visibleMatches.length) * 65}ms` : undefined;
+        const animationDelay = isAdditionalCard ? `${(index - swapPreviousCount) * 65}ms` : isDepartingCard ? `${(index - departingStart) * 65}ms` : undefined;
         return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap && !isAdditionalCard && !isDepartingCard ? "source-flipping" : ""} ${isAdditionalCard ? "source-floating" : ""} ${isDepartingCard ? "source-departing" : ""}`} key={cardKey} style={{ animationDelay }} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
       })}</div></section>
     </div>
