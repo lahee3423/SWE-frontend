@@ -10,7 +10,7 @@ type Page = "home" | "history" | "favorites" | "test";
 
 const won = (value: number) => `${new Intl.NumberFormat("ko-KR").format(value)}원`;
 const sourceLabels: Record<string, string> = { "무신사": "MUSINSA", "지그재그": "ZIGZAG", "에이블리": "ABLY" };
-const sampleFavoriteIds = ["m1", "a1", "m2", "a2", "m3"];
+const sampleFavoriteIds = ["m1", "a1", "m2", "a2", "m3", "m4", "a4", "z1"];
 const demoMatches = [
   { id: "match-1", name: "오버핏 울 블레이저", brand: "MUSINSA STANDARD", price: "89,900원", source: "무신사", tone: "match-one" },
   { id: "match-2", name: "빈티지 체크 자켓", brand: "시티브리즈", price: "78,000원", source: "지그재그", tone: "match-two" },
