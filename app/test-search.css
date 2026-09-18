@@ -72,7 +72,7 @@
   box-shadow: 9px 12px 22px rgba(0, 26, 35, .14), -4px -4px 10px rgba(255, 255, 255, .72), inset 1px 1px 1px rgba(255, 255, 255, .9);
   transition: opacity .18s ease, transform .25s ease, box-shadow .25s ease;
   transform-style: preserve-3d;
-  backface-visibility: hidden;
+  backface-visibility: visible;
 }
 
 .match-card:not(.leaving):hover {
@@ -108,15 +108,13 @@
 .match-card strong { margin: 10px 3px 3px; }
 
 @keyframes source-card-flip-in {
-  0% { opacity: 0; transform: rotateY(-90deg); }
-  10% { opacity: 1; transform: rotateY(-90deg); }
-  100% { opacity: 1; transform: rotateY(0); }
+  0% { transform: rotateY(-78deg); }
+  100% { transform: rotateY(0); }
 }
 
 @keyframes source-card-flip-out {
-  0% { opacity: 1; transform: rotateY(0); }
-  88% { opacity: 1; transform: rotateY(90deg); }
-  100% { opacity: 0; transform: rotateY(90deg); }
+  0% { transform: rotateY(0); }
+  100% { transform: rotateY(78deg); }
 }
 
 
