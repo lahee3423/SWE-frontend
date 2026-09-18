@@ -123,6 +123,7 @@
   width: 480px;
   min-width: 480px;
   flex: 0 0 480px;
+  transform: translateX(-20px);
   padding: 5px;
   border: 1px solid rgba(0, 26, 35, .15);
   border-radius: 999px;
@@ -157,7 +158,7 @@
   .test-controls { grid-template-columns: 1fr; gap: 14px; padding: 0 0 18px; border: 0; }
   .matches-controls { align-items: flex-start; flex-direction: column; gap: 10px; }
   .test-layout, .matches-column, .match-grid { height: auto; overflow: visible; }
-  .source-filter { width: 320px; min-width: 320px; flex-basis: 320px; padding: 3px; }
+  .source-filter { width: 320px; min-width: 320px; flex-basis: 320px; padding: 3px; transform: none; }
   .source-filter button { padding: 10px 3px; font-size: 10px; }
   .filter-indicator { top: 3px; bottom: 3px; left: 9px; width: 66px; }
   .filter-indicator.at-1 { transform: translateX(78.5px); }
