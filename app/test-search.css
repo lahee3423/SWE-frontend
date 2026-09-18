@@ -111,7 +111,7 @@
 
 .match-card.source-flipping { animation: source-card-flip .36s cubic-bezier(.35, .05, .65, .95) both; }
 .match-card.source-floating { animation: source-card-float-in .34s cubic-bezier(.2, .8, .25, 1) both; }
-.match-card.source-departing { animation: source-card-drop-out .46s cubic-bezier(.35, .05, .7, .25) both; pointer-events: none; }
+.match-card.source-departing { animation: source-card-drop-out .46s cubic-bezier(.15, .75, .25, 1) both; pointer-events: none; }
 
 .match-photo {
   height: 184px;
