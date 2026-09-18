@@ -313,7 +313,7 @@ function History({ loggedIn, history, remove, clear, restore, canRestore, reopen
   return <section className="collection-page">
     <div className="collection-heading"><h1>ARCHIVE</h1><div className="collection-actions"><button className="collection-action" onClick={clearWithAnimation} disabled={!history.length || isClearing || Boolean(removingId)}>CLEAR ALL <span>↗</span></button><button className="collection-return" onClick={restore} disabled={!canRestore || isClearing || Boolean(removingId)}>RETURN <span>↶</span></button></div></div>
     {history.length ? <div className={isClearing ? "archive-grid is-clearing" : "archive-grid"}>{history.map((item, index) => <article className={`archive-card archive-tone-${index % 3} ${removingId === item.id ? "is-removing" : ""}`} key={item.id} style={isClearing ? { animationDelay: `${index * 42}ms` } : undefined} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}>
-      <button className="archive-open" onClick={reopen}><div className="archive-visual saved-visual"><span>SEARCH 0{index + 1}</span></div><div className="archive-info"><h2>{item.label}</h2><p>{item.searchedAt}</p><strong>{item.count} MATCHES</strong></div></button>
+      <button className="archive-open" onClick={reopen}><div className="archive-visual saved-visual" /><div className="archive-info"><h2>{item.label}</h2><p>{item.searchedAt}</p><strong>{item.count} MATCHES</strong></div></button>
       <button className="archive-remove" aria-label={`${item.label} 삭제`} onClick={() => removeWithAnimation(item.id)} disabled={isClearing || Boolean(removingId)}>×</button>
     </article>)}</div> : <p className="collection-empty">저장된 검색 이력이 없습니다.</p>}
   </section>;
@@ -324,7 +324,7 @@ function Favorites({ loggedIn, items, favorites, onFavorite }: { loggedIn: boole
   return <section className="collection-page">
     <div className="collection-heading"><h1>SAVED LOOKS</h1><span className="collection-count">{favorites.length} ITEMS</span></div>
     {items.length ? <div className="saved-grid">{items.map((item) => <article className="saved-card" key={item.id}>
-      <div className={`saved-visual ${item.tone}`}><span>{item.platform}</span></div><h2>{item.name}</h2><div className="saved-product-line"><p>{item.brand}</p><button className="saved-favorite" aria-label={`${item.name} 저장 취소`} onClick={() => onFavorite(item.id)}><HeartIcon filled /></button></div><strong>{won(item.price)}</strong>
+      <div className={`saved-visual ${item.tone}`}><span>{sourceLabels[item.platform]}</span></div><h2>{item.name}</h2><div className="saved-product-line"><p>{item.brand}</p><button className="saved-favorite" aria-label={`${item.name} 저장 취소`} onClick={() => onFavorite(item.id)}><HeartIcon filled /></button></div><strong>{won(item.price)}</strong>
     </article>)}</div> : <p className="collection-empty">아직 저장한 제품이 없습니다.</p>}
   </section>;
 }
@@ -333,5 +333,5 @@ function MemberGate({ title, text }: { title: string; text: string }) { return <
 
 function HeartIcon({ filled = false }: { filled?: boolean }) {
   const gradientId = useId();
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id={gradientId} cx="31%" cy="18%" r="82%"><stop offset="0" stopColor="#ffffff" /><stop offset=".56" stopColor="#f6f8f8" /><stop offset="1" stopColor="#d7e0e1" /></radialGradient></defs><path d="M12 20.5 4.78 13.6C1.92 10.86 1.92 6.34 4.78 3.8a5.22 5.22 0 0 1 7.22.18L12 4.12l.01-.14a5.22 5.22 0 0 1 7.21-.18c2.86 2.54 2.86 7.06 0 9.8L12 20.5Z" fill={filled ? `url(#${gradientId})` : "none"} stroke={filled ? "#c7d0d1" : "currentColor"} strokeWidth={filled ? "1" : "1.15"} strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id={gradientId} cx="31%" cy="18%" r="82%"><stop offset="0" stopColor="#fbfdfb" /><stop offset=".56" stopColor="#f0f8ef" /><stop offset="1" stopColor="#cfe7cd" /></radialGradient></defs><path d="M12 20.5 4.78 13.6C1.92 10.86 1.92 6.34 4.78 3.8a5.22 5.22 0 0 1 7.22.18L12 4.12l.01-.14a5.22 5.22 0 0 1 7.21-.18c2.86 2.54 2.86 7.06 0 9.8L12 20.5Z" fill={filled ? `url(#${gradientId})` : "none"} stroke={filled ? "#b9d5b7" : "currentColor"} strokeWidth={filled ? "1" : "1.15"} strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
