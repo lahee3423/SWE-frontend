@@ -73,7 +73,7 @@
   margin-top: -100px;
   padding: 100px 8px 18px 0;
   overflow-y: auto;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
   perspective: 1200px;
   scrollbar-color: var(--line) transparent;
