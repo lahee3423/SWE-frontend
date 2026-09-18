@@ -18,6 +18,9 @@
   letter-spacing: .75px;
 }
 
+.test-heading { margin-bottom: 20px; }
+.test-heading h1 { font-size: clamp(42px, 5vw, 78px); line-height: .86; }
+
 .matches-controls {
   display: flex;
   align-items: center;

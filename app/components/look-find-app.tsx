@@ -185,7 +185,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   };
 
   return <section className="test-search">
-    <div className="test-heading"><div><p>LOOKFIND / TEST SEARCH</p><h1>SIMILAR LOOKS</h1></div></div>
+    <div className="test-heading"><div><h1>SIMILAR LOOKS</h1></div></div>
     <div className="test-controls">
       <p className="test-control-label">YOUR PHOTO</p>
       <div className="matches-controls">
