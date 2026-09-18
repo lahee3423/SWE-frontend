@@ -105,7 +105,7 @@
 .match-card strong { margin: 10px 3px 3px; }
 
 @keyframes source-card-enter {
-  from { opacity: 1; transform: translateY(46px) scale(1) rotate(-.8deg); }
+  from { opacity: 1; transform: translateY(-46px) scale(1) rotate(-.8deg); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
