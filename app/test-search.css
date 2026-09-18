@@ -128,29 +128,34 @@
 }
 
 .match-favorite {
-  position: absolute;
-  z-index: 2;
-  top: 10px;
-  right: 10px;
   display: grid;
   width: 30px;
   height: 30px;
   place-items: center;
-  border: 0;
+  border: 1px solid rgba(0, 26, 35, .08);
   border-radius: 50%;
-  background: var(--paper);
+  background: #ebf1f2;
   color: var(--mint);
   font-size: 17px;
   line-height: 1;
-  box-shadow: 0 2px 4px rgba(0, 26, 35, .12);
-  transition: transform .2s ease, background .2s ease;
+  box-shadow: inset 1px 1px 1px rgba(255, 255, 255, .95), inset -1px -1px 2px rgba(0, 26, 35, .08), 3px 4px 8px rgba(0, 26, 35, .12), -2px -2px 5px rgba(255, 255, 255, .8);
+  transition: transform .2s ease, box-shadow .2s ease;
 }
 
 .match-favorite:hover { transform: scale(1.08); }
-.match-favorite.saved { background: var(--ink); }
+.match-favorite:active { transform: scale(.97); box-shadow: inset 2px 2px 4px rgba(0, 26, 35, .14), inset -1px -1px 2px rgba(255, 255, 255, .8); }
+
+.match-product-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 3px;
+}
+
+.match-product-line small { margin: 0; }
 
 .match-card h3 { margin: 13px 3px 5px; font-size: 13px; }
-.match-card small { margin: 0 3px; }
+.match-card > small { margin: 0 3px; }
 .match-card strong { margin: 10px 3px 3px; }
 
 @keyframes source-card-flip {
