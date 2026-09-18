@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, DragEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { readFavorites, readHistory, writeFavorites, writeHistory } from "../apis/local-store";
 import { products } from "../constants/look-find";
@@ -144,8 +144,39 @@ export default function LookFindApp() {
 
 function SearchTestPage({ image, filter, setFilter }: { image: string | null; filter: string; setFilter: (filter: string) => void }) {
   const filters = [{ id: "all", label: "ALL" }, { id: "무신사", label: "MUSINSA" }, { id: "지그재그", label: "ZIGZAG" }, { id: "에이블리", label: "ABLY" }];
-  const visibleMatches = demoMatches.filter((item) => filter === "all" || item.source === filter);
+  const [displayedFilter, setDisplayedFilter] = useState(filter);
+  const [pendingFilter, setPendingFilter] = useState<string | null>(null);
+  const cardRefs = useRef(new Map<string, HTMLElement>());
+  const previousCardPositions = useRef(new Map<string, DOMRect>());
+  const filterTimer = useRef<number | null>(null);
+  const visibleMatches = demoMatches.filter((item) => displayedFilter === "all" || item.source === displayedFilter);
   const activeIndex = filters.findIndex(({ id }) => id === filter);
+
+  useEffect(() => () => { if (filterTimer.current) window.clearTimeout(filterTimer.current); }, []);
+
+  useLayoutEffect(() => {
+    if (!previousCardPositions.current.size) return;
+    cardRefs.current.forEach((card, id) => {
+      const previous = previousCardPositions.current.get(id);
+      if (!previous) return;
+      const next = card.getBoundingClientRect();
+      const x = previous.left - next.left;
+      const y = previous.top - next.top;
+      if (x || y) card.animate([{ transform: `translate(${x}px, ${y}px)` }, { transform: "translate(0, 0)" }], { duration: 420, easing: "cubic-bezier(.2, .8, .25, 1)" });
+    });
+    previousCardPositions.current.clear();
+  }, [displayedFilter]);
+
+  const changeFilter = (nextFilter: string) => {
+    if (nextFilter === filter || pendingFilter) return;
+    cardRefs.current.forEach((card, id) => previousCardPositions.current.set(id, card.getBoundingClientRect()));
+    setPendingFilter(nextFilter);
+    setFilter(nextFilter);
+    filterTimer.current = window.setTimeout(() => {
+      setDisplayedFilter(nextFilter);
+      setPendingFilter(null);
+    }, 180);
+  };
 
   return <section className="test-search">
     <div className="test-heading"><div><p>LOOKFIND / TEST SEARCH</p><h1>SIMILAR LOOKS</h1></div></div>
@@ -155,13 +186,13 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
         <p className="test-control-label">MATCHED PRODUCTS</p>
         <nav className="source-filter" aria-label="플랫폼 필터">
           <span className={`filter-indicator at-${activeIndex}`} aria-hidden="true" />
-          {filters.map(({ id, label }) => <button className={filter === id ? "active" : ""} key={id} onClick={() => setFilter(id)}>{label}</button>)}
+          {filters.map(({ id, label }) => <button className={filter === id ? "active" : ""} key={id} onClick={() => changeFilter(id)}>{label}</button>)}
         </nav>
       </div>
     </div>
     <div className="test-layout">
       <aside className="uploaded-column"><div className="uploaded-photo" style={{ backgroundImage: `url(${image ?? "/lookfind-hero.png"})` }} /><small>업로드한 이미지에서 상의·하의를 분석했어요.</small></aside>
-      <section className="matches-column"><div className="match-grid">{visibleMatches.map((item, index) => <article className="match-card" key={`${filter}-${item.id}`} style={{ animationDelay: `${index * 45}ms` }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>)}</div></section>
+      <section className="matches-column"><div className="match-grid">{visibleMatches.map((item) => <article className={`match-card ${pendingFilter && pendingFilter !== "all" && item.source !== pendingFilter ? "leaving" : ""}`} key={item.id} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>)}</div></section>
     </div>
   </section>;
 }

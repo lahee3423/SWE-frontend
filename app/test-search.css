@@ -69,13 +69,18 @@
   border-radius: 24px;
   background: linear-gradient(145deg, #f4f8f8 0%, #dce7e8 100%);
   box-shadow: 9px 12px 22px rgba(0, 26, 35, .14), -4px -4px 10px rgba(255, 255, 255, .72), inset 1px 1px 1px rgba(255, 255, 255, .9);
-  transition: transform .25s ease, box-shadow .25s ease;
-  animation: product-card-enter .45s cubic-bezier(.18, .78, .25, 1) both;
+  transition: opacity .18s ease, transform .25s ease, box-shadow .25s ease;
 }
 
-.match-card:hover {
+.match-card:not(.leaving):hover {
   transform: translateY(-4px);
   box-shadow: 13px 17px 28px rgba(0, 26, 35, .18), -4px -4px 10px rgba(255, 255, 255, .76), inset 1px 1px 1px rgba(255, 255, 255, .9);
+}
+
+.match-card.leaving {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(.96);
 }
 
 .match-photo {
@@ -96,14 +101,6 @@
 .match-card small { margin: 0 3px; }
 .match-card strong { margin: 10px 3px 3px; }
 
-@keyframes product-card-enter {
-  from { opacity: 0; transform: translateY(24px) scale(.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .match-card { animation: none; }
-}
 
 .source-filter {
   display: grid;
