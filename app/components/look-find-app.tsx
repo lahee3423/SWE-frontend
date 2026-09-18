@@ -178,6 +178,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   const [swapPreviousCount, setSwapPreviousCount] = useState(0);
   const [departingCards, setDepartingCards] = useState<typeof demoMatches>([]);
   const [isProductsHeadingVisible, setIsProductsHeadingVisible] = useState(true);
+  const [savedMatchIds, setSavedMatchIds] = useState<string[]>([]);
   const cardRefs = useRef(new Map<string, HTMLElement>());
   const previousCardPositions = useRef(new Map<string, DOMRect>());
   const filterTimer = useRef<number | null>(null);
@@ -262,7 +263,8 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
         const isAdditionalCard = isSourceSwap && !pendingFilter && index >= swapPreviousCount;
         const cardKey = isSourceSwap ? `swap-slot-${index}` : item.id;
         const animationDelay = isAdditionalCard ? `${(index - swapPreviousCount) * 65}ms` : undefined;
-        return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap && !isAdditionalCard && !isDepartingCard ? "source-flipping" : ""} ${isAdditionalCard ? "source-floating" : ""} ${isDepartingCard ? "source-departing" : ""}`} key={cardKey} style={{ animationDelay }} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
+        const isSavedMatch = savedMatchIds.includes(item.id);
+        return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap && !isAdditionalCard && !isDepartingCard ? "source-flipping" : ""} ${isAdditionalCard ? "source-floating" : ""} ${isDepartingCard ? "source-departing" : ""}`} key={cardKey} style={{ animationDelay }} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span><button className={isSavedMatch ? "match-favorite saved" : "match-favorite"} onClick={() => setSavedMatchIds((current) => isSavedMatch ? current.filter((id) => id !== item.id) : [...current, item.id])} aria-label={`${item.name} 저장`}>{isSavedMatch ? "♥" : "♡"}</button></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
       })}</div></section>
     </div>
   </section>;
@@ -273,7 +275,7 @@ function History({ loggedIn, history, remove, clear, restore, canRestore, reopen
   return <section className="collection-page">
     <div className="collection-heading"><h1>ARCHIVE</h1><div className="collection-actions"><button className="collection-action" onClick={clear} disabled={!history.length}>CLEAR ALL <span>↗</span></button><button className="collection-return" onClick={restore} disabled={!canRestore}>RETURN <span>↶</span></button></div></div>
     {history.length ? <div className="archive-grid">{history.map((item, index) => <article className={`archive-card archive-tone-${index % 3}`} key={item.id}>
-      <button className="archive-open" onClick={reopen}><div className="archive-visual"><span>SEARCH 0{index + 1}</span><i /></div><div className="archive-info"><h2>{item.label}</h2><p>{item.searchedAt}</p><strong>{item.count} MATCHES</strong></div></button>
+      <button className="archive-open" onClick={reopen}><div className="archive-visual saved-visual"><span>SEARCH 0{index + 1}</span></div><div className="archive-info"><h2>{item.label}</h2><p>{item.searchedAt}</p><strong>{item.count} MATCHES</strong></div></button>
       <button className="archive-remove" aria-label={`${item.label} 삭제`} onClick={() => remove(item.id)}>×</button>
     </article>)}</div> : <p className="collection-empty">저장된 검색 이력이 없습니다.</p>}
   </section>;
@@ -284,7 +286,7 @@ function Favorites({ loggedIn, items, favorites, onFavorite }: { loggedIn: boole
   return <section className="collection-page">
     <div className="collection-heading"><h1>SAVED LOOKS</h1><span className="collection-count">{favorites.length} ITEMS</span></div>
     {items.length ? <div className="saved-grid">{items.map((item) => <article className="saved-card" key={item.id}>
-      <div className={`saved-visual ${item.tone}`}><span>{item.platform}</span><button aria-label={`${item.name} 저장 취소`} onClick={() => onFavorite(item.id)}>♥</button></div><h2>{item.name}</h2><p>{item.brand}</p><strong>{won(item.price)}</strong>
+      <div className={`saved-visual ${item.tone}`}><span>{item.platform}</span></div><h2>{item.name}</h2><div className="saved-product-line"><p>{item.brand}</p><button className="saved-favorite" aria-label={`${item.name} 저장 취소`} onClick={() => onFavorite(item.id)}>♥</button></div><strong>{won(item.price)}</strong>
     </article>)}</div> : <p className="collection-empty">아직 저장한 제품이 없습니다.</p>}
   </section>;
 }
