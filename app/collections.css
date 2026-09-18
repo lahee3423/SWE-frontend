@@ -11,15 +11,8 @@
   justify-content: space-between;
   gap: 30px;
   margin-bottom: 34px;
-  padding-top: 20px;
-  border-top: 1px solid var(--ink);
-}
-
-.collection-heading p {
-  margin: 0 0 12px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .75px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--ink);
 }
 
 .collection-heading h1 {
@@ -30,6 +23,7 @@
 }
 
 .collection-action,
+.collection-return,
 .collection-count {
   margin-bottom: 2px;
   color: var(--ink);
@@ -39,15 +33,26 @@
 }
 
 .collection-action {
-  padding: 10px 15px;
+  padding: 14px 24px;
   border: 0;
   border-radius: 999px;
-  background: var(--mint);
-  box-shadow: 3px 5px 10px rgba(0, 26, 35, .13), inset 1px 1px 1px rgba(255, 255, 255, .6);
+  background: linear-gradient(145deg, #bee9ba 0%, var(--mint) 58%, #a6dfa4 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), inset 0 -2px 3px rgba(0, 26, 35, .1), 0 8px 17px rgba(0, 26, 35, .13);
+  font-size: 11px;
+  font-weight: 800;
   transition: transform .2s ease, box-shadow .2s ease;
 }
 
-.collection-action:hover { transform: translateY(-2px); box-shadow: 5px 8px 14px rgba(0, 26, 35, .16); }
+.collection-action span,
+.collection-return span { margin-left: 14px; font-size: 15px; }
+.collection-action:hover:not(:disabled) { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), inset 0 -2px 3px rgba(0, 26, 35, .1), 0 11px 20px rgba(0, 26, 35, .15); }
+.collection-action:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 0 2px 4px rgba(0, 26, 35, .14), 0 4px 9px rgba(0, 26, 35, .12); }
+
+.collection-actions { display: flex; align-items: center; gap: 10px; }
+.collection-return { padding: 11px 16px; border: 1px solid var(--ink); border-radius: 999px; background: transparent; color: var(--ink); font-size: 10px; font-weight: 800; transition: background .2s ease, color .2s ease; }
+.collection-return:not(:disabled):hover { background: var(--ink); color: var(--paper); }
+.collection-action:disabled,
+.collection-return:disabled { cursor:default; opacity:.35; }
 .collection-count { padding: 10px 0; }
 
 .archive-grid,
@@ -181,8 +186,11 @@
 
 @media (max-width: 800px) {
   .collection-page { padding: 36px 18px 60px; }
-  .collection-heading { align-items: start; margin-bottom: 26px; }
+  .collection-heading { align-items: start; flex-wrap: wrap; margin-bottom: 26px; }
   .collection-heading h1 { font-size: 54px; }
+  .collection-actions { gap: 7px; }
+  .collection-action { padding: 12px 17px; }
+  .collection-return { padding: 10px 12px; }
   .archive-grid,
   .saved-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
   .archive-visual,

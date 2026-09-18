@@ -3,7 +3,7 @@
 import { ChangeEvent, DragEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { readFavorites, readHistory, writeFavorites, writeHistory } from "../apis/local-store";
-import { products } from "../constants/look-find";
+import { initialHistory, products } from "../constants/look-find";
 import type { Product, SearchHistory } from "../types/look-find";
 
 type Page = "home" | "history" | "favorites" | "test";
@@ -41,7 +41,12 @@ const demoMatches = [
 export default function LookFindApp() {
   const [page, setPage] = useState<Page>("home");
   const [loggedIn, setLoggedIn] = useState(false);
-  const [history, setHistory] = useState<SearchHistory[]>(readHistory);
+  const [history, setHistory] = useState<SearchHistory[]>(() => {
+    const storedHistory = readHistory();
+    const hasLegacyExamples = storedHistory.length === 3 && storedHistory.every((item, index) => item.id === `h${index + 1}`);
+    return hasLegacyExamples ? initialHistory : storedHistory;
+  });
+  const [clearedHistory, setClearedHistory] = useState<SearchHistory[] | null>(null);
   const [favorites, setFavorites] = useState<string[]>(() => {
     const storedFavorites = readFavorites();
     return storedFavorites.length ? storedFavorites : sampleFavoriteIds;
@@ -111,6 +116,21 @@ export default function LookFindApp() {
     });
   }
 
+  function clearHistory() {
+    setHistory((current) => {
+      setClearedHistory(current);
+      writeHistory([]);
+      return [];
+    });
+  }
+
+  function restoreHistory() {
+    if (!clearedHistory) return;
+    setHistory(clearedHistory);
+    writeHistory(clearedHistory);
+    setClearedHistory(null);
+  }
+
   function openUploadMode() {
     setIsClosingUpload(false);
     setUploadMode(true);
@@ -145,7 +165,7 @@ export default function LookFindApp() {
         </div>
         <div className="hero-image"><Image src="/lookfind-hero.png" alt="LookFind 스타일 이미지" fill priority sizes="(max-width: 700px) 100vw, 50vw" /><div className={`analysis-layer stage-${analysisStage}`} aria-label="AI 의류 분석 표시"><div className="analysis-box shirt"><span>TOP</span><div className="analysis-crop crop-shirt"><small>TOP</small></div></div><div className="analysis-box pants"><span>PANTS</span><div className="analysis-crop crop-pants"><small>PANTS</small></div></div><div className="analysis-box boots"><span>BOOTS</span><div className="analysis-crop crop-boots"><small>BOOTS</small></div></div></div></div>
       </section>
-    </section> : page === "history" ? <History loggedIn={loggedIn} history={history} remove={(id) => setHistory((current) => { const next = current.filter((item) => item.id !== id); writeHistory(next); return next; })} clear={() => { setHistory([]); writeHistory([]); }} reopen={() => setPage("home")} /> : page === "favorites" ? <Favorites loggedIn={loggedIn} items={products.filter((item) => favorites.includes(item.id))} favorites={favorites} onFavorite={toggleFavorite} /> : <SearchTestPage image={uploadedImage} filter={sourceFilter} setFilter={setSourceFilter} />}
+    </section> : page === "history" ? <History loggedIn={loggedIn} history={history} remove={(id) => setHistory((current) => { const next = current.filter((item) => item.id !== id); writeHistory(next); return next; })} clear={clearHistory} restore={restoreHistory} canRestore={Boolean(clearedHistory)} reopen={() => setPage("home")} /> : page === "favorites" ? <Favorites loggedIn={loggedIn} items={products.filter((item) => favorites.includes(item.id))} favorites={favorites} onFavorite={toggleFavorite} /> : <SearchTestPage image={uploadedImage} filter={sourceFilter} setFilter={setSourceFilter} />}
     {uploadMode && <section className={isClosingUpload ? "upload-mode closing" : "upload-mode"} aria-modal="true" role="dialog"><button className="close-upload" onClick={closeUploadMode} aria-label="업로드 화면 닫기">×</button><div className="upload-content"><h2>UPLOAD PHOTO</h2><div className={isDragging ? "upload-finder dragging" : "upload-finder"} onDragOver={(event) => { event.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={dropImage}><span className="finder-corner top-left" /><span className="finder-corner top-right" /><span className="finder-corner bottom-left" /><span className="finder-corner bottom-right" /><span className="recording">● REC</span><p>사진을 이곳에 끌어다 놓거나 파일을 업로드 해주세요.</p><button className="upload-mode-button" onClick={() => fileInput.current?.click()}>SELECT FILE <span>↗</span></button><small>JPG, PNG · MAX 10MB</small></div></div></section>}
   </main>;
 }
@@ -248,10 +268,10 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   </section>;
 }
 
-function History({ loggedIn, history, remove, clear, reopen }: { loggedIn: boolean; history: SearchHistory[]; remove: (id: string) => void; clear: () => void; reopen: () => void }) {
+function History({ loggedIn, history, remove, clear, restore, canRestore, reopen }: { loggedIn: boolean; history: SearchHistory[]; remove: (id: string) => void; clear: () => void; restore: () => void; canRestore: boolean; reopen: () => void }) {
   if (!loggedIn) return <MemberGate title="검색 기록은 로그인 후 저장돼요" text="로그인하면 이전에 검색한 사진과 결과를 다시 확인할 수 있어요." />;
   return <section className="collection-page">
-    <div className="collection-heading"><div><p>YOUR SEARCHES</p><h1>ARCHIVE</h1></div><button className="collection-action" onClick={clear}>CLEAR ALL ↗</button></div>
+    <div className="collection-heading"><h1>ARCHIVE</h1><div className="collection-actions"><button className="collection-action" onClick={clear} disabled={!history.length}>CLEAR ALL <span>↗</span></button><button className="collection-return" onClick={restore} disabled={!canRestore}>RETURN <span>↶</span></button></div></div>
     {history.length ? <div className="archive-grid">{history.map((item, index) => <article className={`archive-card archive-tone-${index % 3}`} key={item.id}>
       <button className="archive-open" onClick={reopen}><div className="archive-visual"><span>SEARCH 0{index + 1}</span><i /></div><div className="archive-info"><h2>{item.label}</h2><p>{item.searchedAt}</p><strong>{item.count} MATCHES</strong></div></button>
       <button className="archive-remove" aria-label={`${item.label} 삭제`} onClick={() => remove(item.id)}>×</button>
@@ -262,7 +282,7 @@ function History({ loggedIn, history, remove, clear, reopen }: { loggedIn: boole
 function Favorites({ loggedIn, items, favorites, onFavorite }: { loggedIn: boolean; items: Product[]; favorites: string[]; onFavorite: (id: string) => void }) {
   if (!loggedIn) return <MemberGate title="찜 목록은 로그인 후 이용할 수 있어요" text="마음에 드는 상품을 저장하고 나중에 비교해보세요." />;
   return <section className="collection-page">
-    <div className="collection-heading"><div><p>YOUR SELECTIONS</p><h1>SAVED LOOKS</h1></div><span className="collection-count">{favorites.length} ITEMS</span></div>
+    <div className="collection-heading"><h1>SAVED LOOKS</h1><span className="collection-count">{favorites.length} ITEMS</span></div>
     {items.length ? <div className="saved-grid">{items.map((item) => <article className="saved-card" key={item.id}>
       <div className={`saved-visual ${item.tone}`}><span>{item.platform}</span><button aria-label={`${item.name} 저장 취소`} onClick={() => onFavorite(item.id)}>♥</button></div><h2>{item.name}</h2><p>{item.brand}</p><strong>{won(item.price)}</strong>
     </article>)}</div> : <p className="collection-empty">아직 저장한 제품이 없습니다.</p>}

@@ -8,4 +8,4 @@ export const products:Product[]=[
  {id:"m3",name:"크롭 워싱 데님 셔츠",brand:"MUSINSA STANDARD",platform:"무신사",price:49900,similarity:79,tone:"five"},
  {id:"a3",name:"데일리 연청 데님 재킷",brand:"데이데이",platform:"에이블리",price:38700,similarity:76,tone:"six"}
 ];
-export const initialHistory:SearchHistory[]=[{id:"h1",label:"데님 재킷 착용 사진",searchedAt:"오늘 오전 10:42",count:20},{id:"h2",label:"블랙 바람막이 사진",searchedAt:"어제 오후 5:20",count:20},{id:"h3",label:"니트 가디건 사진",searchedAt:"9월 12일",count:20}];
+export const initialHistory:SearchHistory[]=[{id:"h1",label:"데님 재킷 착용 사진",searchedAt:"오늘 오전 10:42",count:20},{id:"h2",label:"블랙 바람막이 사진",searchedAt:"어제 오후 5:20",count:20},{id:"h3",label:"니트 가디건 사진",searchedAt:"9월 12일",count:20},{id:"h4",label:"브라운 스웨이드 재킷",searchedAt:"9월 9일",count:20},{id:"h5",label:"화이트 셔츠 코디",searchedAt:"9월 4일",count:20},{id:"h6",label:"카키 카고 팬츠",searchedAt:"8월 28일",count:20}];
