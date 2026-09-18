@@ -187,7 +187,6 @@
 }
 
 .saved-favorite svg { width: 18px; height: 18px; transition: transform .2s ease, fill .2s ease; }
-.saved-favorite { background: linear-gradient(145deg, rgba(214, 248, 211, .88), rgba(179, 239, 178, .82) 58%, rgba(157, 220, 155, .8)); border-color: rgba(255, 255, 255, .7); }
 .saved-favorite svg { filter: drop-shadow(0 1.5px 1.5px rgba(0, 26, 35, .18)) drop-shadow(0 -1px 1px rgba(255, 255, 255, .78)); }
 
 .saved-favorite:hover { transform: scale(1.08); }
