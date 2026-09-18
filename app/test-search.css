@@ -19,7 +19,7 @@
 }
 
 .matched-products-label {
-  transition: opacity .12s ease, transform .12s ease;
+  transition: opacity .26s cubic-bezier(.2, .8, .25, 1), transform .26s cubic-bezier(.2, .8, .25, 1);
 }
 
 .matched-products-label.is-hidden {

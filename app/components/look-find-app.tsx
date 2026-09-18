@@ -157,12 +157,16 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   const cardRefs = useRef(new Map<string, HTMLElement>());
   const previousCardPositions = useRef(new Map<string, DOMRect>());
   const filterTimer = useRef<number | null>(null);
+  const scrollResetFrame = useRef<number | null>(null);
   const matchGridRef = useRef<HTMLDivElement>(null);
   const visibleMatches = demoMatches.filter((item) => displayedFilter === "all" || item.source === displayedFilter);
   const displayMatches = isSourceSwap && !pendingFilter ? [...visibleMatches, ...departingCards] : visibleMatches;
   const activeIndex = filters.findIndex(({ id }) => id === filter);
 
-  useEffect(() => () => { if (filterTimer.current) window.clearTimeout(filterTimer.current); }, []);
+  useEffect(() => () => {
+    if (filterTimer.current) window.clearTimeout(filterTimer.current);
+    if (scrollResetFrame.current) window.cancelAnimationFrame(scrollResetFrame.current);
+  }, []);
 
   useLayoutEffect(() => {
     if (!previousCardPositions.current.size) return;
@@ -187,7 +191,21 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
       setSwapPreviousCount(visibleMatches.length);
       setDepartingCards(nextMatches.length < visibleMatches.length ? visibleMatches.slice(nextMatches.length) : []);
     } else setDepartingCards([]);
-    matchGridRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    const grid = matchGridRef.current;
+    if (grid && grid.scrollTop > 0) {
+      if (scrollResetFrame.current) window.cancelAnimationFrame(scrollResetFrame.current);
+      const startingScrollTop = grid.scrollTop;
+      let startedAt: number | null = null;
+      const duration = 260;
+      const scrollStep = (now: number) => {
+        if (startedAt === null) startedAt = now;
+        const progress = Math.min((now - startedAt) / duration, 1);
+        const eased = 1 - (1 - progress) ** 3;
+        grid.scrollTop = startingScrollTop * (1 - eased);
+        if (progress < 1) scrollResetFrame.current = window.requestAnimationFrame(scrollStep);
+      };
+      scrollResetFrame.current = window.requestAnimationFrame(scrollStep);
+    }
     setIsSourceSwap(sourceSwap);
     setPendingFilter(nextFilter);
     setFilter(nextFilter);
