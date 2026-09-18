@@ -31,6 +31,7 @@ const demoMatches = [
   { id: "match-18", name: "오버핏 하프 코트", brand: "리린", price: "105,000원", source: "에이블리", tone: "match-two" },
   { id: "match-19", name: "텍스처 울 셋업 자켓", brand: "SPAO", price: "79,900원", source: "무신사", tone: "match-four" },
   { id: "match-20", name: "클래식 라인 재킷", brand: "에프앤디", price: "71,000원", source: "지그재그", tone: "match-five" },
+  { id: "match-21", name: "소프트 라인 블레이저", brand: "원로그", price: "84,000원", source: "에이블리", tone: "match-six" },
 ];
 
 export default function LookFindApp() {
@@ -171,7 +172,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   const changeFilter = (nextFilter: string) => {
     if (nextFilter === filter || pendingFilter || isSourceSwap) return;
     const sourceSwap = displayedFilter !== "all" && nextFilter !== "all";
-    const swapDelay = sourceSwap ? 500 : 180;
+    const swapDelay = sourceSwap ? 170 : 180;
     cardRefs.current.forEach((card, id) => previousCardPositions.current.set(id, card.getBoundingClientRect()));
     setIsSourceSwap(sourceSwap);
     setPendingFilter(nextFilter);
@@ -179,7 +180,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
     filterTimer.current = window.setTimeout(() => {
       setDisplayedFilter(nextFilter);
       setPendingFilter(null);
-      if (sourceSwap) window.setTimeout(() => setIsSourceSwap(false), 560);
+      if (sourceSwap) window.setTimeout(() => setIsSourceSwap(false), 190);
     }, swapDelay);
   };
 
@@ -198,10 +199,9 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
     <div className="test-layout">
       <aside className="uploaded-column"><div className="uploaded-photo" style={{ backgroundImage: `url(${image ?? "/lookfind-hero.png"})` }} /><small>업로드한 이미지에서 상의·하의를 분석했어요.</small></aside>
       <section className="matches-column"><div className="match-grid">{visibleMatches.map((item, index) => {
-        const isLeaving = Boolean(pendingFilter && pendingFilter !== "all" && item.source !== pendingFilter);
-        const isEntering = isSourceSwap && !pendingFilter && displayedFilter === filter;
-        const animationDelay = isLeaving || isEntering ? `${index * 35}ms` : undefined;
-        return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap ? "source-swap" : ""} ${isEntering ? "source-entering" : ""}`} key={item.id} style={{ animationDelay }} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
+        const isLeaving = !isSourceSwap && Boolean(pendingFilter && pendingFilter !== "all" && item.source !== pendingFilter);
+        const cardKey = isSourceSwap ? `swap-slot-${index}` : item.id;
+        return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap ? "source-flipping" : ""}`} key={cardKey} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
       })}</div></section>
     </div>
   </section>;
