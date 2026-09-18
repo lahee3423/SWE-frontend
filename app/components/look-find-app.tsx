@@ -44,7 +44,7 @@ export default function LookFindApp() {
   const [history, setHistory] = useState<SearchHistory[]>(() => {
     const storedHistory = readHistory();
     const hasLegacyExamples = storedHistory.length === 3 && storedHistory.every((item, index) => item.id === `h${index + 1}`);
-    return hasLegacyExamples ? initialHistory : storedHistory;
+    return !storedHistory.length || hasLegacyExamples ? initialHistory : storedHistory;
   });
   const [clearedHistory, setClearedHistory] = useState<SearchHistory[] | null>(null);
   const [favorites, setFavorites] = useState<string[]>(() => {

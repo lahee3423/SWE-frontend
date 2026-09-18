@@ -17,8 +17,8 @@
 
 .collection-heading h1 {
   margin: 0;
-  font-size: clamp(48px, 6vw, 88px);
-  line-height: .8;
+  font-size: clamp(42px, 5vw, 78px);
+  line-height: .86;
   letter-spacing: -.085em;
 }
 
@@ -53,7 +53,7 @@
 .collection-return:not(:disabled):hover { background: var(--ink); color: var(--paper); }
 .collection-action:disabled,
 .collection-return:disabled { cursor:default; opacity:.35; }
-.collection-count { padding: 10px 0; }
+.collection-count { padding: 10px 0; font-size: 14px; letter-spacing: .2px; }
 
 .archive-grid,
 .saved-grid {
@@ -189,7 +189,7 @@
 @media (max-width: 800px) {
   .collection-page { padding: 36px 18px 60px; }
   .collection-heading { align-items: start; flex-wrap: wrap; margin-bottom: 26px; }
-  .collection-heading h1 { font-size: 54px; }
+  .collection-heading h1 { font-size: clamp(42px, 11vw, 54px); }
   .collection-actions { gap: 7px; }
   .collection-action { padding: 12px 17px; }
   .collection-return { padding: 10px 12px; }
