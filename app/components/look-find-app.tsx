@@ -161,7 +161,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
     </div>
     <div className="test-layout">
       <aside className="uploaded-column"><div className="uploaded-photo" style={{ backgroundImage: `url(${image ?? "/lookfind-hero.png"})` }} /><small>업로드한 이미지에서 상의·하의를 분석했어요.</small></aside>
-      <section className="matches-column"><div className="match-grid">{visibleMatches.map((item) => <article className="match-card" key={item.id}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>)}</div></section>
+      <section className="matches-column"><div className="match-grid">{visibleMatches.map((item, index) => <article className="match-card" key={`${filter}-${item.id}`} style={{ animationDelay: `${index * 45}ms` }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>)}</div></section>
     </div>
   </section>;
 }
