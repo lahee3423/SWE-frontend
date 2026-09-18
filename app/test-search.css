@@ -27,7 +27,13 @@
   transform: translateY(-8px);
 }
 
-.test-heading { margin-bottom: 20px; }
+.test-heading {
+  position: relative;
+  z-index: 11;
+  margin-bottom: 0;
+  padding-bottom: 20px;
+  background: var(--paper);
+}
 .test-heading h1 { font-size: clamp(42px, 5vw, 78px); line-height: .86; }
 
 .matches-controls {
@@ -138,7 +144,7 @@
 }
 
 @keyframes source-card-drop-out {
-  0%, 72% { opacity: 1; transform: translateY(0); }
+  0% { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(48px); }
 }
 
