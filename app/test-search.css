@@ -4,7 +4,7 @@
   z-index: 10;
   display: grid;
   grid-template-columns: minmax(250px, 30%) 1fr;
-  gap: 3vw;
+  gap: max(16px, calc(3vw - 20px));
   align-items: center;
   padding: 20px 0 12px;
   border-top: 1px solid var(--ink);
@@ -19,7 +19,7 @@
 }
 
 .matched-products-label {
-  transition: opacity .22s ease, transform .22s ease;
+  transition: opacity .12s ease, transform .12s ease;
 }
 
 .matched-products-label.is-hidden {
@@ -35,12 +35,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 25px;
+  margin-right: 20px;
 }
 
 .test-layout {
   flex: 1;
   min-height: 0;
-  gap: 3vw;
+  gap: max(16px, calc(3vw - 20px));
   padding-top: 0;
   border-top: 0;
   overflow: visible;
@@ -65,15 +66,15 @@
   min-height: 0;
 }
 
-.matches-column { overflow: visible; }
+.matches-column { overflow: visible; margin-right: 20px; }
 
 .match-grid {
   height: calc(100% + 100px);
   margin-top: -100px;
   padding: 100px 8px 18px 0;
   overflow-y: auto;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
   perspective: 1200px;
   scrollbar-color: var(--line) transparent;
   scrollbar-width: thin;
@@ -81,9 +82,9 @@
 
 /* Give each matched product a tactile, product-card surface without changing its content. */
 .match-card {
-  padding: 8px;
+  padding: 10px;
   border: 1px solid rgba(0, 26, 35, .11);
-  border-radius: 20px;
+  border-radius: 24px;
   background: linear-gradient(145deg, #f4f8f8 0%, #dce7e8 100%);
   box-shadow: 9px 12px 22px rgba(0, 26, 35, .14), -4px -4px 10px rgba(255, 255, 255, .72), inset 1px 1px 1px rgba(255, 255, 255, .9);
   transition: opacity .18s ease, transform .25s ease, box-shadow .25s ease;
@@ -105,9 +106,9 @@
 .match-card.source-flipping { animation: source-card-flip .36s cubic-bezier(.35, .05, .65, .95) both; }
 
 .match-photo {
-  height: 142px;
+  height: 184px;
   border: 1px solid rgba(255, 255, 255, .55);
-  border-radius: 14px;
+  border-radius: 17px;
   box-shadow: inset 0 2px 7px rgba(0, 26, 35, .11), 0 4px 8px rgba(0, 26, 35, .09);
 }
 
@@ -118,9 +119,9 @@
   box-shadow: 0 2px 4px rgba(0, 26, 35, .12);
 }
 
-.match-card h3 { margin: 10px 3px 4px; font-size: 12px; }
+.match-card h3 { margin: 13px 3px 5px; font-size: 13px; }
 .match-card small { margin: 0 3px; }
-.match-card strong { margin: 8px 3px 2px; }
+.match-card strong { margin: 10px 3px 3px; }
 
 @keyframes source-card-flip {
   0% { transform: rotateY(0); }
@@ -171,8 +172,8 @@
 @media (max-width: 800px) {
   .test-search { display: block; height: auto; min-height: calc(100vh - 68px); padding-bottom: 60px; overflow: visible; }
   .test-controls { grid-template-columns: 1fr; gap: 14px; padding: 0 0 18px; border: 0; }
-  .matches-controls { align-items: flex-start; flex-direction: column; gap: 10px; }
-  .test-layout, .matches-column, .match-grid { height: auto; gap: 35px; overflow: visible; }
+  .matches-controls { align-items: flex-start; flex-direction: column; gap: 10px; margin-right: 0; }
+  .test-layout, .matches-column, .match-grid { height: auto; gap: 35px; margin-right: 0; overflow: visible; }
   .match-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
   .source-filter { width: 320px; min-width: 320px; flex-basis: 320px; padding: 3px; transform: none; }
   .source-filter button { padding: 10px 3px; font-size: 10px; }
