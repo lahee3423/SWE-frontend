@@ -146,6 +146,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   const filters = [{ id: "all", label: "ALL" }, { id: "무신사", label: "MUSINSA" }, { id: "지그재그", label: "ZIGZAG" }, { id: "에이블리", label: "ABLY" }];
   const [displayedFilter, setDisplayedFilter] = useState(filter);
   const [pendingFilter, setPendingFilter] = useState<string | null>(null);
+  const [isSourceSwap, setIsSourceSwap] = useState(false);
   const cardRefs = useRef(new Map<string, HTMLElement>());
   const previousCardPositions = useRef(new Map<string, DOMRect>());
   const filterTimer = useRef<number | null>(null);
@@ -169,12 +170,15 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
 
   const changeFilter = (nextFilter: string) => {
     if (nextFilter === filter || pendingFilter) return;
+    const sourceSwap = displayedFilter !== "all" && nextFilter !== "all";
     cardRefs.current.forEach((card, id) => previousCardPositions.current.set(id, card.getBoundingClientRect()));
+    setIsSourceSwap(sourceSwap);
     setPendingFilter(nextFilter);
     setFilter(nextFilter);
     filterTimer.current = window.setTimeout(() => {
       setDisplayedFilter(nextFilter);
       setPendingFilter(null);
+      if (sourceSwap) window.setTimeout(() => setIsSourceSwap(false), 450);
     }, 180);
   };
 
@@ -192,7 +196,11 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
     </div>
     <div className="test-layout">
       <aside className="uploaded-column"><div className="uploaded-photo" style={{ backgroundImage: `url(${image ?? "/lookfind-hero.png"})` }} /><small>업로드한 이미지에서 상의·하의를 분석했어요.</small></aside>
-      <section className="matches-column"><div className="match-grid">{visibleMatches.map((item) => <article className={`match-card ${pendingFilter && pendingFilter !== "all" && item.source !== pendingFilter ? "leaving" : ""}`} key={item.id} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>)}</div></section>
+      <section className="matches-column"><div className="match-grid">{visibleMatches.map((item) => {
+        const isLeaving = Boolean(pendingFilter && pendingFilter !== "all" && item.source !== pendingFilter);
+        const isEntering = isSourceSwap && !pendingFilter && displayedFilter === filter;
+        return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap ? "source-swap" : ""} ${isEntering ? "source-entering" : ""}`} key={item.id} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
+      })}</div></section>
     </div>
   </section>;
 }

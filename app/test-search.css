@@ -83,6 +83,9 @@
   transform: scale(.96);
 }
 
+.match-card.leaving.source-swap { transform: translateX(-42px) scale(.97); }
+.match-card.source-entering { animation: source-card-enter .42s cubic-bezier(.2, .8, .25, 1) both; }
+
 .match-photo {
   height: 184px;
   border: 1px solid rgba(255, 255, 255, .55);
@@ -100,6 +103,11 @@
 .match-card h3 { margin: 13px 3px 5px; }
 .match-card small { margin: 0 3px; }
 .match-card strong { margin: 10px 3px 3px; }
+
+@keyframes source-card-enter {
+  from { opacity: 0; transform: translateX(42px) scale(.97); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
 
 
 .source-filter {
