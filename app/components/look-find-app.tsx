@@ -10,6 +10,7 @@ type Page = "home" | "history" | "favorites" | "test";
 
 const won = (value: number) => `${new Intl.NumberFormat("ko-KR").format(value)}원`;
 const sourceLabels: Record<string, string> = { "무신사": "MUSINSA", "지그재그": "ZIGZAG", "에이블리": "ABLY" };
+const sampleFavoriteIds = ["m1", "a1", "m2"];
 const demoMatches = [
   { id: "match-1", name: "오버핏 울 블레이저", brand: "MUSINSA STANDARD", price: "89,900원", source: "무신사", tone: "match-one" },
   { id: "match-2", name: "빈티지 체크 자켓", brand: "시티브리즈", price: "78,000원", source: "지그재그", tone: "match-two" },
@@ -41,7 +42,10 @@ export default function LookFindApp() {
   const [page, setPage] = useState<Page>("home");
   const [loggedIn, setLoggedIn] = useState(false);
   const [history, setHistory] = useState<SearchHistory[]>(readHistory);
-  const [favorites, setFavorites] = useState<string[]>(readFavorites);
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    const storedFavorites = readFavorites();
+    return storedFavorites.length ? storedFavorites : sampleFavoriteIds;
+  });
   const [uploadMode, setUploadMode] = useState(false);
   const [isClosingUpload, setIsClosingUpload] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -244,18 +248,25 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   </section>;
 }
 
-function ProductCard({ item, saved, onFavorite }: { item: Product; saved: boolean; onFavorite: (id: string) => void }) {
-  return <article className="product-card"><div className={`product-visual ${item.tone}`}><span>{item.similarity}% MATCH</span><button className={saved ? "saved" : ""} onClick={() => onFavorite(item.id)}>{saved ? "♥" : "♡"}</button></div><p>{item.platform}</p><h3>{item.name}</h3><small>{item.brand}</small><strong>{won(item.price)}</strong><a href="https://www.musinsa.com" target="_blank" rel="noreferrer">VIEW ITEM ↗</a></article>;
-}
-
 function History({ loggedIn, history, remove, clear, reopen }: { loggedIn: boolean; history: SearchHistory[]; remove: (id: string) => void; clear: () => void; reopen: () => void }) {
   if (!loggedIn) return <MemberGate title="검색 기록은 로그인 후 저장돼요" text="로그인하면 이전에 검색한 사진과 결과를 다시 확인할 수 있어요." />;
-  return <section className="member-page"><p>MY ARCHIVE</p><h1>RECENT<br />SEARCHES</h1><div className="member-description"><span>검색 원본 이미지는 일정 기간 후 자동 삭제됩니다.</span><button onClick={clear}>CLEAR ALL</button></div><div className="history-list">{history.length ? history.map((item) => <article key={item.id}><button className="history-open" onClick={reopen}><b>⌁</b><span><strong>{item.label}</strong><small>{item.searchedAt} · {item.count}개 결과</small></span></button><button className="remove" onClick={() => remove(item.id)}>×</button></article>) : <p className="empty">저장된 검색 이력이 없습니다.</p>}</div></section>;
+  return <section className="collection-page">
+    <div className="collection-heading"><div><p>YOUR SEARCHES</p><h1>ARCHIVE</h1></div><button className="collection-action" onClick={clear}>CLEAR ALL ↗</button></div>
+    {history.length ? <div className="archive-grid">{history.map((item, index) => <article className={`archive-card archive-tone-${index % 3}`} key={item.id}>
+      <button className="archive-open" onClick={reopen}><div className="archive-visual"><span>SEARCH 0{index + 1}</span><i /></div><div className="archive-info"><h2>{item.label}</h2><p>{item.searchedAt}</p><strong>{item.count} MATCHES</strong></div></button>
+      <button className="archive-remove" aria-label={`${item.label} 삭제`} onClick={() => remove(item.id)}>×</button>
+    </article>)}</div> : <p className="collection-empty">저장된 검색 이력이 없습니다.</p>}
+  </section>;
 }
 
 function Favorites({ loggedIn, items, favorites, onFavorite }: { loggedIn: boolean; items: Product[]; favorites: string[]; onFavorite: (id: string) => void }) {
   if (!loggedIn) return <MemberGate title="찜 목록은 로그인 후 이용할 수 있어요" text="마음에 드는 상품을 저장하고 나중에 비교해보세요." />;
-  return <section className="member-page"><p>MY SAVED ITEMS</p><h1>SAVED<br />LOOKS <small>{favorites.length}</small></h1>{items.length ? <div className="product-grid">{items.map((item) => <ProductCard item={item} key={item.id} saved onFavorite={onFavorite} />)}</div> : <p className="empty">아직 찜한 상품이 없습니다.</p>}</section>;
+  return <section className="collection-page">
+    <div className="collection-heading"><div><p>YOUR SELECTIONS</p><h1>SAVED LOOKS</h1></div><span className="collection-count">{favorites.length} ITEMS</span></div>
+    {items.length ? <div className="saved-grid">{items.map((item) => <article className="saved-card" key={item.id}>
+      <div className={`saved-visual ${item.tone}`}><span>{item.platform}</span><button aria-label={`${item.name} 저장 취소`} onClick={() => onFavorite(item.id)}>♥</button></div><h2>{item.name}</h2><p>{item.brand}</p><strong>{won(item.price)}</strong>
+    </article>)}</div> : <p className="collection-empty">아직 저장한 제품이 없습니다.</p>}
+  </section>;
 }
 
 function MemberGate({ title, text }: { title: string; text: string }) { return <section className="member-gate"><b>✦</b><h1>{title}</h1><p>{text}</p></section>; }
