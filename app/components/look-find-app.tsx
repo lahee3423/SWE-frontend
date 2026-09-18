@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, DragEvent, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { ChangeEvent, DragEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { readFavorites, readHistory, writeFavorites, writeHistory } from "../apis/local-store";
 import { initialHistory, products } from "../constants/look-find";
@@ -332,6 +332,5 @@ function Favorites({ loggedIn, items, favorites, onFavorite }: { loggedIn: boole
 function MemberGate({ title, text }: { title: string; text: string }) { return <section className="member-gate"><b>✦</b><h1>{title}</h1><p>{text}</p></section>; }
 
 function HeartIcon({ filled = false }: { filled?: boolean }) {
-  const gradientId = useId();
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id={gradientId} cx="31%" cy="18%" r="82%"><stop offset="0" stopColor="#d9f8d6" /><stop offset=".56" stopColor="#b3efb2" /><stop offset="1" stopColor="#9ddd9c" /></radialGradient></defs><path d="M12 20.5 4.78 13.6C1.92 10.86 1.92 6.34 4.78 3.8a5.22 5.22 0 0 1 7.22.18L12 4.12l.01-.14a5.22 5.22 0 0 1 7.21-.18c2.86 2.54 2.86 7.06 0 9.8L12 20.5Z" fill={filled ? `url(#${gradientId})` : "none"} stroke={filled ? "#8dcc8b" : "currentColor"} strokeWidth={filled ? "1" : "1.15"} strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 4.78 13.6C1.92 10.86 1.92 6.34 4.78 3.8a5.22 5.22 0 0 1 7.22.18L12 4.12l.01-.14a5.22 5.22 0 0 1 7.21-.18c2.86 2.54 2.86 7.06 0 9.8L12 20.5Z" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={filled ? "1" : "1.15"} strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
