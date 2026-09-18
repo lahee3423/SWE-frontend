@@ -6,7 +6,7 @@ import { readFavorites, readHistory, writeFavorites, writeHistory } from "../api
 import { initialHistory, products } from "../constants/look-find";
 import type { Product, SearchHistory } from "../types/look-find";
 
-type Page = "home" | "history" | "favorites" | "test";
+type Page = "home" | "history" | "favorites" | "test" | "login";
 
 const won = (value: number) => `${new Intl.NumberFormat("ko-KR").format(value)}원`;
 const sourceLabels: Record<string, string> = { "무신사": "MUSINSA", "지그재그": "ZIGZAG", "에이블리": "ABLY" };
@@ -153,7 +153,7 @@ export default function LookFindApp() {
         {([ ["home", "SEARCH"], ["history", "ARCHIVE"], ["favorites", "SAVED"], ["test", "TEST"] ] as const).map(([id, label]) =>
           <button className={page === id ? "active" : ""} key={id} onClick={() => setPage(id)}>{label}</button>)}
       </nav>
-      <button className="account" onClick={() => setLoggedIn((current) => !current)}>{loggedIn ? "MY PAGE / LOGOUT" : "LOGIN"}</button>
+      <button className="account" onClick={() => { if (loggedIn) setLoggedIn(false); else setPage("login"); }}>{loggedIn ? "MY PAGE / LOGOUT" : "LOGIN"}</button>
     </header>
 
     {page === "home" ? <section className="home">
@@ -166,7 +166,7 @@ export default function LookFindApp() {
         </div>
         <div className="hero-image"><Image src="/lookfind-hero.png" alt="LookFind 스타일 이미지" fill priority sizes="(max-width: 700px) 100vw, 50vw" /><div className={`analysis-layer stage-${analysisStage}`} aria-label="AI 의류 분석 표시"><div className="analysis-box shirt"><span>TOP</span><div className="analysis-crop crop-shirt"><small>TOP</small></div></div><div className="analysis-box pants"><span>PANTS</span><div className="analysis-crop crop-pants"><small>PANTS</small></div></div><div className="analysis-box boots"><span>BOOTS</span><div className="analysis-crop crop-boots"><small>BOOTS</small></div></div></div></div>
       </section>
-    </section> : page === "history" ? <History loggedIn={loggedIn} history={history} remove={(id) => setHistory((current) => { const next = current.filter((item) => item.id !== id); writeHistory(next); return next; })} clear={clearHistory} restore={restoreHistory} canRestore={Boolean(clearedHistory)} reopen={() => setPage("home")} /> : page === "favorites" ? <Favorites loggedIn={loggedIn} items={products.filter((item) => favorites.includes(item.id))} favorites={favorites} onFavorite={toggleFavorite} /> : <SearchTestPage image={uploadedImage} filter={sourceFilter} setFilter={setSourceFilter} />}
+    </section> : page === "history" ? <History loggedIn={loggedIn} history={history} remove={(id) => setHistory((current) => { const next = current.filter((item) => item.id !== id); writeHistory(next); return next; })} clear={clearHistory} restore={restoreHistory} canRestore={Boolean(clearedHistory)} reopen={() => setPage("home")} /> : page === "favorites" ? <Favorites loggedIn={loggedIn} items={products.filter((item) => favorites.includes(item.id))} favorites={favorites} onFavorite={toggleFavorite} /> : page === "login" ? <Login onLogin={() => { setLoggedIn(true); setPage("home"); }} /> : <SearchTestPage image={uploadedImage} filter={sourceFilter} setFilter={setSourceFilter} />}
     {uploadMode && <section className={isClosingUpload ? "upload-mode closing" : "upload-mode"} aria-modal="true" role="dialog"><button className="close-upload" onClick={closeUploadMode} aria-label="업로드 화면 닫기">×</button><div className="upload-content"><h2>UPLOAD PHOTO</h2><div className={isDragging ? "upload-finder dragging" : "upload-finder"} onDragOver={(event) => { event.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={dropImage}><span className="finder-corner top-left" /><span className="finder-corner top-right" /><span className="finder-corner bottom-left" /><span className="finder-corner bottom-right" /><span className="recording">● REC</span><p>사진을 이곳에 끌어다 놓거나 파일을 업로드 해주세요.</p><button className="upload-mode-button" onClick={() => fileInput.current?.click()}>SELECT FILE <span>↗</span></button><small>JPG, PNG · MAX 10MB</small></div></div></section>}
   </main>;
 }
@@ -327,6 +327,10 @@ function Favorites({ loggedIn, items, favorites, onFavorite }: { loggedIn: boole
       <div className={`saved-visual ${item.tone}`}><span>{sourceLabels[item.platform]}</span></div><h2>{item.name}</h2><div className="saved-product-line"><p>{item.brand}</p><button className="saved-favorite" aria-label={`${item.name} 저장 취소`} onClick={() => onFavorite(item.id)}><HeartIcon filled /></button></div><strong>{won(item.price)}</strong>
     </article>)}</div> : <p className="collection-empty">아직 저장한 제품이 없습니다.</p>}
   </section>;
+}
+
+function Login({ onLogin }: { onLogin: () => void }) {
+  return <section className="login-page"><div className="login-intro"><p>WELCOME TO</p><h1>LOOKFIND</h1><span>사진으로 찾고, 취향으로 저장하세요.</span></div><form className="login-panel" onSubmit={(event) => { event.preventDefault(); onLogin(); }}><p>MEMBER LOGIN</p><h2>WELCOME<br />BACK</h2><label>EMAIL<input type="email" name="email" placeholder="you@example.com" required /></label><label>PASSWORD<input type="password" name="password" placeholder="••••••••" required /></label><button type="submit">LOGIN <span>↗</span></button><small>아직 계정이 없으신가요? <b>SIGN UP</b></small></form></section>;
 }
 
 function MemberGate({ title, text }: { title: string; text: string }) { return <section className="member-gate"><b>✦</b><h1>{title}</h1><p>{text}</p></section>; }
