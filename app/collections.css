@@ -33,23 +33,23 @@
 }
 
 .collection-action {
-  padding: 14px 24px;
+  padding: 10px 16px;
   border: 0;
   border-radius: 999px;
   background: linear-gradient(145deg, #bee9ba 0%, var(--mint) 58%, #a6dfa4 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), inset 0 -2px 3px rgba(0, 26, 35, .1), 0 8px 17px rgba(0, 26, 35, .13);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   transition: transform .2s ease, box-shadow .2s ease;
 }
 
 .collection-action span,
-.collection-return span { margin-left: 14px; font-size: 15px; }
+.collection-return span { margin-left: 9px; font-size: 13px; }
 .collection-action:hover:not(:disabled) { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), inset 0 -2px 3px rgba(0, 26, 35, .1), 0 11px 20px rgba(0, 26, 35, .15); }
 .collection-action:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 0 2px 4px rgba(0, 26, 35, .14), 0 4px 9px rgba(0, 26, 35, .12); }
 
 .collection-actions { display: flex; align-items: center; gap: 10px; }
-.collection-return { padding: 11px 16px; border: 1px solid var(--ink); border-radius: 999px; background: transparent; color: var(--ink); font-size: 10px; font-weight: 800; transition: background .2s ease, color .2s ease; }
+.collection-return { padding: 8px 12px; border: 1px solid var(--ink); border-radius: 999px; background: transparent; color: var(--ink); font-size: 9px; font-weight: 800; transition: background .2s ease, color .2s ease; }
 .collection-return:not(:disabled):hover { background: var(--ink); color: var(--paper); }
 .collection-action:disabled,
 .collection-return:disabled { cursor:default; opacity:.35; }
@@ -58,9 +58,11 @@
 .archive-grid,
 .saved-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
 }
+
+.archive-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.saved-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
 .archive-card,
 .saved-card {
@@ -157,7 +159,7 @@
   line-height: 1;
 }
 
-.saved-visual { height: 205px; }
+.saved-visual { height: 184px; }
 .saved-visual.one { background: #7c9fa4; }
 .saved-visual.two { background: #a3b8aa; }
 .saved-visual.three { background: #b3c6c7; }
@@ -168,8 +170,8 @@
 .saved-visual button {
   position: absolute;
   z-index: 2;
-  top: 10px;
   right: 10px;
+  bottom: 10px;
   display: grid;
   width: 30px;
   height: 30px;
