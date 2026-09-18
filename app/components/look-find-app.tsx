@@ -151,6 +151,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   const [displayedFilter, setDisplayedFilter] = useState(filter);
   const [pendingFilter, setPendingFilter] = useState<string | null>(null);
   const [isSourceSwap, setIsSourceSwap] = useState(false);
+  const [swapPreviousCount, setSwapPreviousCount] = useState(0);
   const [isProductsHeadingVisible, setIsProductsHeadingVisible] = useState(true);
   const cardRefs = useRef(new Map<string, HTMLElement>());
   const previousCardPositions = useRef(new Map<string, DOMRect>());
@@ -179,13 +180,14 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
     const sourceSwap = displayedFilter !== "all" && nextFilter !== "all";
     const swapDelay = sourceSwap ? 170 : 180;
     cardRefs.current.forEach((card, id) => previousCardPositions.current.set(id, card.getBoundingClientRect()));
+    if (sourceSwap) setSwapPreviousCount(visibleMatches.length);
     setIsSourceSwap(sourceSwap);
     setPendingFilter(nextFilter);
     setFilter(nextFilter);
     filterTimer.current = window.setTimeout(() => {
       setDisplayedFilter(nextFilter);
       setPendingFilter(null);
-      if (sourceSwap) window.setTimeout(() => setIsSourceSwap(false), 190);
+      if (sourceSwap) window.setTimeout(() => setIsSourceSwap(false), 560);
     }, swapDelay);
   };
 
@@ -205,8 +207,10 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
       <aside className="uploaded-column"><div className="uploaded-photo" style={{ backgroundImage: `url(${image ?? "/lookfind-hero.png"})` }} /><small>업로드한 이미지에서 상의·하의를 분석했어요.</small></aside>
       <section className="matches-column"><div className="match-grid" onScroll={(event) => { const nextScrollTop = event.currentTarget.scrollTop; setIsProductsHeadingVisible(nextScrollTop <= productScrollTop.current || nextScrollTop < 12); productScrollTop.current = nextScrollTop; }}>{visibleMatches.map((item, index) => {
         const isLeaving = !isSourceSwap && Boolean(pendingFilter && pendingFilter !== "all" && item.source !== pendingFilter);
+        const isAdditionalCard = isSourceSwap && !pendingFilter && index >= swapPreviousCount;
         const cardKey = isSourceSwap ? `swap-slot-${index}` : item.id;
-        return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap ? "source-flipping" : ""}`} key={cardKey} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
+        const animationDelay = isAdditionalCard ? `${(index - swapPreviousCount) * 65}ms` : undefined;
+        return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap && !isAdditionalCard ? "source-flipping" : ""} ${isAdditionalCard ? "source-floating" : ""}`} key={cardKey} style={{ animationDelay }} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
       })}</div></section>
     </div>
   </section>;
