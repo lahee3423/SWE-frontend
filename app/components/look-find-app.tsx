@@ -152,12 +152,15 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   const [pendingFilter, setPendingFilter] = useState<string | null>(null);
   const [isSourceSwap, setIsSourceSwap] = useState(false);
   const [swapPreviousCount, setSwapPreviousCount] = useState(0);
+  const [departingCards, setDepartingCards] = useState<typeof demoMatches>([]);
   const [isProductsHeadingVisible, setIsProductsHeadingVisible] = useState(true);
   const cardRefs = useRef(new Map<string, HTMLElement>());
   const previousCardPositions = useRef(new Map<string, DOMRect>());
   const filterTimer = useRef<number | null>(null);
   const productScrollTop = useRef(0);
+  const keepProductsHeadingHidden = useRef(false);
   const visibleMatches = demoMatches.filter((item) => displayedFilter === "all" || item.source === displayedFilter);
+  const displayMatches = isSourceSwap && !pendingFilter ? [...visibleMatches, ...departingCards] : visibleMatches;
   const activeIndex = filters.findIndex(({ id }) => id === filter);
 
   useEffect(() => () => { if (filterTimer.current) window.clearTimeout(filterTimer.current); }, []);
@@ -178,16 +181,21 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   const changeFilter = (nextFilter: string) => {
     if (nextFilter === filter || pendingFilter || isSourceSwap) return;
     const sourceSwap = displayedFilter !== "all" && nextFilter !== "all";
+    const nextMatches = demoMatches.filter((item) => nextFilter === "all" || item.source === nextFilter);
     const swapDelay = sourceSwap ? 170 : 180;
     cardRefs.current.forEach((card, id) => previousCardPositions.current.set(id, card.getBoundingClientRect()));
-    if (sourceSwap) setSwapPreviousCount(visibleMatches.length);
+    if (sourceSwap) {
+      setSwapPreviousCount(visibleMatches.length);
+      setDepartingCards(nextMatches.length < visibleMatches.length ? visibleMatches.slice(nextMatches.length) : []);
+    } else setDepartingCards([]);
+    if (!isProductsHeadingVisible) keepProductsHeadingHidden.current = true;
     setIsSourceSwap(sourceSwap);
     setPendingFilter(nextFilter);
     setFilter(nextFilter);
     filterTimer.current = window.setTimeout(() => {
       setDisplayedFilter(nextFilter);
       setPendingFilter(null);
-      if (sourceSwap) window.setTimeout(() => setIsSourceSwap(false), 560);
+      if (sourceSwap) window.setTimeout(() => { setIsSourceSwap(false); setDepartingCards([]); }, 560);
     }, swapDelay);
   };
 
@@ -205,12 +213,14 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
     </div>
     <div className="test-layout">
       <aside className="uploaded-column"><div className="uploaded-photo" style={{ backgroundImage: `url(${image ?? "/lookfind-hero.png"})` }} /><small>업로드한 이미지에서 상의·하의를 분석했어요.</small></aside>
-      <section className="matches-column"><div className="match-grid" onScroll={(event) => { const nextScrollTop = event.currentTarget.scrollTop; setIsProductsHeadingVisible(nextScrollTop <= productScrollTop.current || nextScrollTop < 12); productScrollTop.current = nextScrollTop; }}>{visibleMatches.map((item, index) => {
+      <section className="matches-column"><div className="match-grid" onWheel={(event) => { if (event.deltaY < 0) keepProductsHeadingHidden.current = false; }} onScroll={(event) => { const nextScrollTop = event.currentTarget.scrollTop; if (keepProductsHeadingHidden.current) { productScrollTop.current = nextScrollTop; setIsProductsHeadingVisible(false); return; } setIsProductsHeadingVisible(nextScrollTop <= productScrollTop.current || nextScrollTop < 12); productScrollTop.current = nextScrollTop; }}>{displayMatches.map((item, index) => {
         const isLeaving = !isSourceSwap && Boolean(pendingFilter && pendingFilter !== "all" && item.source !== pendingFilter);
+        const pendingMatchCount = pendingFilter ? demoMatches.filter((match) => match.source === pendingFilter).length : visibleMatches.length;
+        const isDepartingCard = isSourceSwap && index >= (pendingFilter ? pendingMatchCount : visibleMatches.length);
         const isAdditionalCard = isSourceSwap && !pendingFilter && index >= swapPreviousCount;
         const cardKey = isSourceSwap ? `swap-slot-${index}` : item.id;
-        const animationDelay = isAdditionalCard ? `${(index - swapPreviousCount) * 65}ms` : undefined;
-        return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap && !isAdditionalCard ? "source-flipping" : ""} ${isAdditionalCard ? "source-floating" : ""}`} key={cardKey} style={{ animationDelay }} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
+        const animationDelay = isAdditionalCard ? `${(index - swapPreviousCount) * 65}ms` : isDepartingCard ? `${(index - visibleMatches.length) * 65}ms` : undefined;
+        return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap && !isAdditionalCard && !isDepartingCard ? "source-flipping" : ""} ${isAdditionalCard ? "source-floating" : ""} ${isDepartingCard ? "source-departing" : ""}`} key={cardKey} style={{ animationDelay }} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
       })}</div></section>
     </div>
   </section>;

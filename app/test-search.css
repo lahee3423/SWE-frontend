@@ -105,6 +105,7 @@
 
 .match-card.source-flipping { animation: source-card-flip .36s cubic-bezier(.35, .05, .65, .95) both; }
 .match-card.source-floating { animation: source-card-float-in .34s cubic-bezier(.2, .8, .25, 1) both; }
+.match-card.source-departing { animation: source-card-drop-out .34s cubic-bezier(.4, 0, .7, .25) both; pointer-events: none; }
 
 .match-photo {
   height: 184px;
@@ -134,6 +135,11 @@
 @keyframes source-card-float-in {
   from { opacity: 0; transform: translateY(28px) scale(.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes source-card-drop-out {
+  0%, 72% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(48px); }
 }
 
 
