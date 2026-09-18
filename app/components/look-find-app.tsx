@@ -148,9 +148,11 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   const [displayedFilter, setDisplayedFilter] = useState(filter);
   const [pendingFilter, setPendingFilter] = useState<string | null>(null);
   const [isSourceSwap, setIsSourceSwap] = useState(false);
+  const [isProductsHeadingVisible, setIsProductsHeadingVisible] = useState(true);
   const cardRefs = useRef(new Map<string, HTMLElement>());
   const previousCardPositions = useRef(new Map<string, DOMRect>());
   const filterTimer = useRef<number | null>(null);
+  const productScrollTop = useRef(0);
   const visibleMatches = demoMatches.filter((item) => displayedFilter === "all" || item.source === displayedFilter);
   const activeIndex = filters.findIndex(({ id }) => id === filter);
 
@@ -189,7 +191,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
     <div className="test-controls">
       <p className="test-control-label">YOUR PHOTO</p>
       <div className="matches-controls">
-        <p className="test-control-label">MATCHED PRODUCTS</p>
+        <p className={`test-control-label matched-products-label ${isProductsHeadingVisible ? "" : "is-hidden"}`}>MATCHED PRODUCTS</p>
         <nav className="source-filter" aria-label="플랫폼 필터">
           <span className={`filter-indicator at-${activeIndex}`} aria-hidden="true" />
           {filters.map(({ id, label }) => <button className={filter === id ? "active" : ""} key={id} onClick={() => changeFilter(id)}>{label}</button>)}
@@ -198,7 +200,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
     </div>
     <div className="test-layout">
       <aside className="uploaded-column"><div className="uploaded-photo" style={{ backgroundImage: `url(${image ?? "/lookfind-hero.png"})` }} /><small>업로드한 이미지에서 상의·하의를 분석했어요.</small></aside>
-      <section className="matches-column"><div className="match-grid">{visibleMatches.map((item, index) => {
+      <section className="matches-column"><div className="match-grid" onScroll={(event) => { const nextScrollTop = event.currentTarget.scrollTop; setIsProductsHeadingVisible(nextScrollTop <= productScrollTop.current || nextScrollTop < 12); productScrollTop.current = nextScrollTop; }}>{visibleMatches.map((item, index) => {
         const isLeaving = !isSourceSwap && Boolean(pendingFilter && pendingFilter !== "all" && item.source !== pendingFilter);
         const cardKey = isSourceSwap ? `swap-slot-${index}` : item.id;
         return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap ? "source-flipping" : ""}`} key={cardKey} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;

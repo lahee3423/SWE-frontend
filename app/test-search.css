@@ -4,7 +4,7 @@
   z-index: 10;
   display: grid;
   grid-template-columns: minmax(250px, 30%) 1fr;
-  gap: 5vw;
+  gap: 3vw;
   align-items: center;
   padding: 20px 0 12px;
   border-top: 1px solid var(--ink);
@@ -16,6 +16,15 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: .75px;
+}
+
+.matched-products-label {
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+.matched-products-label.is-hidden {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 .test-heading { margin-bottom: 20px; }
@@ -31,6 +40,7 @@
 .test-layout {
   flex: 1;
   min-height: 0;
+  gap: 3vw;
   padding-top: 0;
   border-top: 0;
   overflow: visible;
@@ -162,7 +172,7 @@
   .test-search { display: block; height: auto; min-height: calc(100vh - 68px); padding-bottom: 60px; overflow: visible; }
   .test-controls { grid-template-columns: 1fr; gap: 14px; padding: 0 0 18px; border: 0; }
   .matches-controls { align-items: flex-start; flex-direction: column; gap: 10px; }
-  .test-layout, .matches-column, .match-grid { height: auto; overflow: visible; }
+  .test-layout, .matches-column, .match-grid { height: auto; gap: 35px; overflow: visible; }
   .match-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
   .source-filter { width: 320px; min-width: 320px; flex-basis: 320px; padding: 3px; transform: none; }
   .source-filter button { padding: 10px 3px; font-size: 10px; }
