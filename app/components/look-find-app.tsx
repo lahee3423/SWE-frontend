@@ -332,5 +332,5 @@ function Favorites({ loggedIn, items, favorites, onFavorite }: { loggedIn: boole
 function MemberGate({ title, text }: { title: string; text: string }) { return <section className="member-gate"><b>✦</b><h1>{title}</h1><p>{text}</p></section>; }
 
 function HeartIcon({ filled = false }: { filled?: boolean }) {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 4.78 13.6C1.92 10.86 1.92 6.34 4.78 3.8a5.22 5.22 0 0 1 7.22.18L12 4.12l.01-.14a5.22 5.22 0 0 1 7.21-.18c2.86 2.54 2.86 7.06 0 9.8L12 20.5Z" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={filled ? "1" : "1.15"} strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 20.8-1.32-1.2C5.48 14.9 2.4 12.1 2.4 8.58c0-2.88 2.26-5.18 5.13-5.18 1.62 0 3.18.75 4.2 1.96a5.53 5.53 0 0 1 4.2-1.96c2.87 0 5.13 2.3 5.13 5.18 0 3.52-3.08 6.32-8.28 11.02L12 20.8Z" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={filled ? "1" : "1.15"} strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
