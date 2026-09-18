@@ -265,7 +265,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
         const cardKey = isSourceSwap ? `swap-slot-${index}` : item.id;
         const animationDelay = isAdditionalCard ? `${(index - swapPreviousCount) * 65}ms` : undefined;
         const isSavedMatch = savedMatchIds.includes(item.id);
-        return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap && !isAdditionalCard && !isDepartingCard ? "source-flipping" : ""} ${isAdditionalCard ? "source-floating" : ""} ${isDepartingCard ? "source-departing" : ""}`} key={cardKey} style={{ animationDelay }} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><div className="match-product-line"><small>{item.brand}</small><button className={isSavedMatch ? "match-favorite saved" : "match-favorite"} onClick={() => setSavedMatchIds((current) => isSavedMatch ? current.filter((id) => id !== item.id) : [...current, item.id])} aria-label={`${item.name} 저장`}>{isSavedMatch ? "♥" : "♡"}</button></div><strong>{item.price}</strong></article>;
+        return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap && !isAdditionalCard && !isDepartingCard ? "source-flipping" : ""} ${isAdditionalCard ? "source-floating" : ""} ${isDepartingCard ? "source-departing" : ""}`} key={cardKey} style={{ animationDelay }} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><div className="match-product-line"><small>{item.brand}</small><button className={isSavedMatch ? "match-favorite saved" : "match-favorite"} onClick={() => setSavedMatchIds((current) => isSavedMatch ? current.filter((id) => id !== item.id) : [...current, item.id])} aria-label={`${item.name} 저장`}><HeartIcon filled={isSavedMatch} /></button></div><strong>{item.price}</strong></article>;
       })}</div></section>
     </div>
   </section>;
@@ -324,9 +324,13 @@ function Favorites({ loggedIn, items, favorites, onFavorite }: { loggedIn: boole
   return <section className="collection-page">
     <div className="collection-heading"><h1>SAVED LOOKS</h1><span className="collection-count">{favorites.length} ITEMS</span></div>
     {items.length ? <div className="saved-grid">{items.map((item) => <article className="saved-card" key={item.id}>
-      <div className={`saved-visual ${item.tone}`}><span>{item.platform}</span></div><h2>{item.name}</h2><div className="saved-product-line"><p>{item.brand}</p><button className="saved-favorite" aria-label={`${item.name} 저장 취소`} onClick={() => onFavorite(item.id)}>♥</button></div><strong>{won(item.price)}</strong>
+      <div className={`saved-visual ${item.tone}`}><span>{item.platform}</span></div><h2>{item.name}</h2><div className="saved-product-line"><p>{item.brand}</p><button className="saved-favorite" aria-label={`${item.name} 저장 취소`} onClick={() => onFavorite(item.id)}><HeartIcon filled /></button></div><strong>{won(item.price)}</strong>
     </article>)}</div> : <p className="collection-empty">아직 저장한 제품이 없습니다.</p>}
   </section>;
 }
 
 function MemberGate({ title, text }: { title: string; text: string }) { return <section className="member-gate"><b>✦</b><h1>{title}</h1><p>{text}</p></section>; }
+
+function HeartIcon({ filled = false }: { filled?: boolean }) {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.4 4.7 13.6C1.8 10.9 1.8 6.4 4.6 3.8c2.2-2 5.6-1.7 7.4.6 1.8-2.3 5.2-2.6 7.4-.6 2.8 2.6 2.8 7.1-.1 9.8L12 20.4Z" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
