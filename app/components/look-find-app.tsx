@@ -271,10 +271,19 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
 }
 
 function History({ loggedIn, history, remove, clear, restore, canRestore, reopen }: { loggedIn: boolean; history: SearchHistory[]; remove: (id: string) => void; clear: () => void; restore: () => void; canRestore: boolean; reopen: () => void }) {
+  const [isClearing, setIsClearing] = useState(false);
+  const clearWithAnimation = () => {
+    if (!history.length || isClearing) return;
+    setIsClearing(true);
+    window.setTimeout(() => {
+      clear();
+      setIsClearing(false);
+    }, 700);
+  };
   if (!loggedIn) return <MemberGate title="검색 기록은 로그인 후 저장돼요" text="로그인하면 이전에 검색한 사진과 결과를 다시 확인할 수 있어요." />;
   return <section className="collection-page">
-    <div className="collection-heading"><h1>ARCHIVE</h1><div className="collection-actions"><button className="collection-action" onClick={clear} disabled={!history.length}>CLEAR ALL <span>↗</span></button><button className="collection-return" onClick={restore} disabled={!canRestore}>RETURN <span>↶</span></button></div></div>
-    {history.length ? <div className="archive-grid">{history.map((item, index) => <article className={`archive-card archive-tone-${index % 3}`} key={item.id}>
+    <div className="collection-heading"><h1>ARCHIVE</h1><div className="collection-actions"><button className="collection-action" onClick={clearWithAnimation} disabled={!history.length || isClearing}>CLEAR ALL <span>↗</span></button><button className="collection-return" onClick={restore} disabled={!canRestore || isClearing}>RETURN <span>↶</span></button></div></div>
+    {history.length ? <div className={isClearing ? "archive-grid is-clearing" : "archive-grid"}>{history.map((item, index) => <article className={`archive-card archive-tone-${index % 3}`} key={item.id} style={isClearing ? { animationDelay: `${index * 42}ms` } : undefined}>
       <button className="archive-open" onClick={reopen}><div className="archive-visual saved-visual"><span>SEARCH 0{index + 1}</span></div><div className="archive-info"><h2>{item.label}</h2><p>{item.searchedAt}</p><strong>{item.count} MATCHES</strong></div></button>
       <button className="archive-remove" aria-label={`${item.label} 삭제`} onClick={() => remove(item.id)}>×</button>
     </article>)}</div> : <p className="collection-empty">저장된 검색 이력이 없습니다.</p>}
