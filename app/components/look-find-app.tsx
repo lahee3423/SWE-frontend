@@ -171,7 +171,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   const changeFilter = (nextFilter: string) => {
     if (nextFilter === filter || pendingFilter || isSourceSwap) return;
     const sourceSwap = displayedFilter !== "all" && nextFilter !== "all";
-    const swapDelay = sourceSwap ? 850 : 180;
+    const swapDelay = sourceSwap ? 500 : 180;
     cardRefs.current.forEach((card, id) => previousCardPositions.current.set(id, card.getBoundingClientRect()));
     setIsSourceSwap(sourceSwap);
     setPendingFilter(nextFilter);
@@ -179,7 +179,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
     filterTimer.current = window.setTimeout(() => {
       setDisplayedFilter(nextFilter);
       setPendingFilter(null);
-      if (sourceSwap) window.setTimeout(() => setIsSourceSwap(false), 950);
+      if (sourceSwap) window.setTimeout(() => setIsSourceSwap(false), 560);
     }, swapDelay);
   };
 
@@ -200,7 +200,7 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
       <section className="matches-column"><div className="match-grid">{visibleMatches.map((item, index) => {
         const isLeaving = Boolean(pendingFilter && pendingFilter !== "all" && item.source !== pendingFilter);
         const isEntering = isSourceSwap && !pendingFilter && displayedFilter === filter;
-        const animationDelay = isLeaving || isEntering ? `${index * 65}ms` : undefined;
+        const animationDelay = isLeaving || isEntering ? `${index * 35}ms` : undefined;
         return <article className={`match-card ${isLeaving ? "leaving" : ""} ${isSourceSwap ? "source-swap" : ""} ${isEntering ? "source-entering" : ""}`} key={item.id} style={{ animationDelay }} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}><div className={`match-photo ${item.tone}`}><span>{sourceLabels[item.source]}</span></div><h3>{item.name}</h3><small>{item.brand}</small><strong>{item.price}</strong></article>;
       })}</div></section>
     </div>

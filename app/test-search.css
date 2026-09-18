@@ -86,8 +86,8 @@
   transform: scale(.96);
 }
 
-.match-card.leaving.source-swap { animation: source-card-flip-out .42s cubic-bezier(.45, 0, .55, 1) both; }
-.match-card.source-entering { animation: source-card-flip-in .48s cubic-bezier(.2, .75, .3, 1) both; }
+.match-card.leaving.source-swap { animation: source-card-flip-out .26s cubic-bezier(.45, 0, .55, 1) both; }
+.match-card.source-entering { animation: source-card-flip-in .3s cubic-bezier(.2, .75, .3, 1) both; }
 
 .match-photo {
   height: 184px;
