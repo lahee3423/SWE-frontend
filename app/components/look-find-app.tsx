@@ -2,11 +2,19 @@
 
 import { ChangeEvent, DragEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { readFavorites, readHistory, writeFavorites, writeHistory } from "../apis/local-store";
-import { initialHistory, products } from "../constants/look-find";
-import type { Product, SearchHistory } from "../types/look-find";
+import { readFavorites, writeFavorites } from "../apis/local-store";
+import { ApiError, errorMessage, getMe, searchImage, signOut } from "../apis/backend";
+import AuthForm from "./auth-form";
+import LoginCurtain from "./login-curtain";
+import MemberGate from "./member-gate";
+import HistoryView from "./history-view";
+import MyPage from "./my-page";
+import SearchResults from "./search-results";
+import type { User, SearchResponse } from "../types/api";
+import { products } from "../constants/look-find";
+import type { Product } from "../types/look-find";
 
-type Page = "home" | "history" | "favorites" | "test" | "login";
+type Page = "mypage" | "home" | "history" | "favorites" | "test" | "results";
 
 const won = (value: number) => `${new Intl.NumberFormat("ko-KR").format(value)}원`;
 const sourceLabels: Record<string, string> = { "무신사": "MUSINSA", "지그재그": "ZIGZAG", "에이블리": "ABLY" };
@@ -40,20 +48,39 @@ const demoMatches = [
 
 export default function LookFindApp() {
   const [page, setPage] = useState<Page>("home");
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [history, setHistory] = useState<SearchHistory[]>(() => {
-    const storedHistory = readHistory();
-    const restoredHistory = new Map(initialHistory.map((item) => [item.id, item]));
-    storedHistory.forEach((item) => restoredHistory.set(item.id, item));
-    return Array.from(restoredHistory.values());
-  });
-  const [clearedHistory, setClearedHistory] = useState<SearchHistory[] | null>(null);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [notice, setNotice] = useState("");
+  const [searchBusy, setSearchBusy] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [searchResult, setSearchResult] = useState<SearchResponse | null>(null);
+  const searchController = useRef<AbortController | null>(null);
+  const [searchFile, setSearchFile] = useState<File | null>(null);
+  const loggedIn = Boolean(user);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("login_error") === "kakao") {
+      setNotice("카카오 로그인을 완료하지 못했어요. 잠시 후 다시 시도해 주세요.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    getMe(controller.signal).then(setUser).catch(error => {
+      if (!controller.signal.aborted && !(error instanceof ApiError && error.status === 401)) setNotice(errorMessage(error));
+    }).finally(() => { if (!controller.signal.aborted) setAuthLoading(false); });
+    return () => controller.abort();
+  }, []);
+  useEffect(() => () => searchController.current?.abort(), []);
   const [favorites, setFavorites] = useState<string[]>(() => {
     const storedFavorites = readFavorites();
     return Array.from(new Set([...sampleFavoriteIds, ...storedFavorites]));
   });
   const [uploadMode, setUploadMode] = useState(false);
   const [isClosingUpload, setIsClosingUpload] = useState(false);
+  const uploadCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (uploadCloseTimer.current) clearTimeout(uploadCloseTimer.current); }, []);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [sourceFilter, setSourceFilter] = useState("all");
   const [analysisStage, setAnalysisStage] = useState(0);
@@ -63,7 +90,7 @@ export default function LookFindApp() {
   const touchStart = useRef(0);
 
   useEffect(() => {
-    if (page !== "home" || uploadMode) return;
+    if (page !== "home" || uploadMode || loginOpen) return;
 
     const changeStage = (direction: number) => {
       if (stageLock.current) return;
@@ -89,18 +116,64 @@ export default function LookFindApp() {
     window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchend", onTouchEnd, { passive: true });
     return () => { window.removeEventListener("wheel", onWheel); window.removeEventListener("touchstart", onTouchStart); window.removeEventListener("touchend", onTouchEnd); };
-  }, [page, uploadMode]);
+  }, [page, uploadMode, loginOpen]);
+
+  function openLogin() {
+    window.scrollTo({ top: 0, behavior: "instant" });
+    if (uploadCloseTimer.current) clearTimeout(uploadCloseTimer.current);
+    setIsClosingUpload(false);
+    setLoginOpen(true);
+  }
+
+  function navigate(next: Page) {
+    if (uploadCloseTimer.current) clearTimeout(uploadCloseTimer.current);
+    setUploadMode(false);
+    setIsClosingUpload(false);
+    setLoginOpen(false);
+    setPage(next);
+  }
 
   function chooseImage(event: ChangeEvent<HTMLInputElement>) {
     loadImage(event.target.files?.[0]);
   }
 
+  useEffect(() => () => {
+    if (uploadedImage?.startsWith("blob:")) URL.revokeObjectURL(uploadedImage);
+  }, [uploadedImage]);
+
+  async function runSearch(file: File) {
+    searchController.current?.abort();
+    const controller = new AbortController();
+    searchController.current = controller;
+    setSearchBusy(true); setSearchError(""); setSearchResult(null);
+    try {
+      const result = await searchImage(file, controller.signal);
+      if (!controller.signal.aborted) setSearchResult(result);
+    } catch (error) {
+      if (!controller.signal.aborted) setSearchError(errorMessage(error));
+    } finally { if (!controller.signal.aborted) setSearchBusy(false); }
+  }
+
   function loadImage(file?: File) {
     if (!file) return;
+    if (!file.type.startsWith("image/") || file.size > 10 * 1024 * 1024) {
+      setNotice("10MB 이하의 이미지 파일을 선택해 주세요."); return;
+    }
+    if (authLoading) { setNotice("로그인 상태를 확인 중입니다. 잠시 후 다시 시도해 주세요."); return; }
+    setNotice(""); setSearchFile(file);
     setUploadedImage(URL.createObjectURL(file));
-    setUploadMode(false);
-    setIsDragging(false);
-    setPage("test");
+    setUploadMode(false); setIsDragging(false); setPage("results");
+    void runSearch(file);
+  }
+
+  async function logout() {
+    setAuthLoading(true);
+    try {
+      await signOut(); searchController.current?.abort();
+      setUser(null); setSearchResult(null); setUploadedImage(null); setSearchBusy(false);
+      setSearchFile(null); setPage("home"); setNotice("");
+    } catch (error) { setNotice(errorMessage(error)); }
+    finally { setAuthLoading(false); }
   }
 
   function dropImage(event: DragEvent<HTMLDivElement>) {
@@ -117,21 +190,6 @@ export default function LookFindApp() {
     });
   }
 
-  function clearHistory() {
-    setHistory((current) => {
-      setClearedHistory(current);
-      writeHistory([]);
-      return [];
-    });
-  }
-
-  function restoreHistory() {
-    if (!clearedHistory) return;
-    setHistory(clearedHistory);
-    writeHistory(clearedHistory);
-    setClearedHistory(null);
-  }
-
   function openUploadMode() {
     setIsClosingUpload(false);
     setUploadMode(true);
@@ -140,34 +198,50 @@ export default function LookFindApp() {
   function closeUploadMode() {
     if (isClosingUpload) return;
     setIsClosingUpload(true);
-    window.setTimeout(() => {
+    uploadCloseTimer.current = setTimeout(() => {
       setUploadMode(false);
       setIsClosingUpload(false);
     }, 650);
   }
 
   return <main className="lookfind">
-    <header className={uploadMode ? "site-header upload-active" : "site-header"}>
-      <button className="wordmark" onClick={() => setPage("home")}>LOOK<span>•</span>FIND</button>
+    <header className={loginOpen ? "site-header login-active" : uploadMode ? "site-header upload-active" : "site-header"}>
+      <button className="wordmark" onClick={() => navigate("home")}>LOOK<span>•</span>FIND</button>
       <nav aria-label="주 메뉴">
         {([ ["home", "SEARCH"], ["history", "ARCHIVE"], ["favorites", "SAVED"], ["test", "TEST"] ] as const).map(([id, label]) =>
-          <button className={page === id ? "active" : ""} key={id} onClick={() => setPage(id)}>{label}</button>)}
+          <button className={!loginOpen && page === id ? "active" : ""} key={id} onClick={() => navigate(id)}>{label}</button>)}
+        {user && <button className={!loginOpen && page === "mypage" ? "active" : ""} aria-current={!loginOpen && page === "mypage" ? "page" : undefined} onClick={() => navigate("mypage")}>MY PAGE</button>}
       </nav>
-      <button className="account" onClick={() => { if (loggedIn) setLoggedIn(false); else setPage("login"); }}>{loggedIn ? "MY PAGE / LOGOUT" : "LOGIN"}</button>
+      {loggedIn && user ? <div className="account-menu">
+        <button className="account account-profile" title={user.email} aria-haspopup="menu">
+          {user.avatar_url ? <img src={user.avatar_url} alt="" referrerPolicy="no-referrer" /> : <span className="account-avatar-fallback">{(user.display_name ?? user.email).slice(0, 1).toUpperCase()}</span>}
+          <span>{user.display_name || user.email.split("@")[0]}</span><i>⌄</i>
+        </button>
+        <div className="account-popover" role="menu">
+          <span>{user.email}</span>
+          <button role="menuitem" onClick={() => void logout()}>LOGOUT</button>
+        </div>
+      </div> : <button className="account" disabled={authLoading} onClick={openLogin}>{authLoading ? "LOADING…" : "LOGIN"}</button>}
     </header>
 
+    <div inert={loginOpen}>
+    {notice && <div className="connection-notice" role="alert">{notice}<button onClick={() => setNotice("")} aria-label="알림 닫기">×</button></div>}
     {page === "home" ? <section className="home">
       <section className="hero">
         <input ref={fileInput} className="file-input" type="file" accept="image/*" onChange={chooseImage} />
         <div className="hero-copy">
           <h1>LOOKFIND</h1>
           <p>사진 한 장으로 원하는 스타일을 찾아보세요.<br />사진 속 옷을 AI가 하나씩 분석하고,<br />비슷한 디자인의 상품을 찾아드립니다.<br />무신사, 지그재그, 에이블리의 상품을 한눈에 비교하고<br />당신이 찾던 옷을 가장 쉽게 발견해보세요.</p>
-          <button onClick={openUploadMode}>PHOTO UPLOAD <span>↗</span></button>
+          <button className="photo-action" onClick={openUploadMode}>PHOTO UPLOAD <span>↗</span></button>
         </div>
         <div className="hero-image"><Image src="/lookfind-hero.png" alt="LookFind 스타일 이미지" fill priority sizes="(max-width: 700px) 100vw, 50vw" /><div className={`analysis-layer stage-${analysisStage}`} aria-label="AI 의류 분석 표시"><div className="analysis-box shirt"><span>TOP</span><div className="analysis-crop crop-shirt"><small>TOP</small></div></div><div className="analysis-box pants"><span>PANTS</span><div className="analysis-crop crop-pants"><small>PANTS</small></div></div><div className="analysis-box boots"><span>BOOTS</span><div className="analysis-crop crop-boots"><small>BOOTS</small></div></div></div></div>
       </section>
-    </section> : page === "history" ? <History loggedIn={loggedIn} history={history} remove={(id) => setHistory((current) => { const next = current.filter((item) => item.id !== id); writeHistory(next); return next; })} clear={clearHistory} restore={restoreHistory} canRestore={Boolean(clearedHistory)} reopen={() => setPage("home")} /> : page === "favorites" ? <Favorites loggedIn={loggedIn} items={products.filter((item) => favorites.includes(item.id))} favorites={favorites} onFavorite={toggleFavorite} /> : page === "login" ? <Login onLogin={() => { setLoggedIn(true); setPage("home"); }} /> : <SearchTestPage image={uploadedImage} filter={sourceFilter} setFilter={setSourceFilter} />}
-    {uploadMode && <section className={isClosingUpload ? "upload-mode closing" : "upload-mode"} aria-modal="true" role="dialog"><button className="close-upload" onClick={closeUploadMode} aria-label="업로드 화면 닫기">×</button><div className="upload-content"><h2>UPLOAD PHOTO</h2><div className={isDragging ? "upload-finder dragging" : "upload-finder"} onDragOver={(event) => { event.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={dropImage}><span className="finder-corner top-left" /><span className="finder-corner top-right" /><span className="finder-corner bottom-left" /><span className="finder-corner bottom-right" /><span className="recording">● REC</span><p>사진을 이곳에 끌어다 놓거나 파일을 업로드 해주세요.</p><button className="upload-mode-button" onClick={() => fileInput.current?.click()}>SELECT FILE <span>↗</span></button><small>JPG, PNG · MAX 10MB</small></div></div></section>}
+    </section> : page === "mypage" ? (user ? <MyPage user={user} busy={authLoading} onHistory={() => navigate("history")} onSaved={() => navigate("favorites")} onLogout={() => void logout()} /> : <MemberGate title="로그인이 필요해요." text="로그인 후 내 계정을 확인할 수 있어요." onLogin={openLogin} />) : page === "history" ? (authLoading ? <p className="api-status">로그인 상태를 확인하고 있습니다…</p> : user ? <HistoryView key={user.id} onLogin={() => openLogin()} onOpen={(result) => { setSearchResult(result); setUploadedImage(result.image_url ?? null); setSearchError(""); setSearchBusy(false); setSearchFile(null); searchController.current?.abort(); setPage("results"); }} /> : <MemberGate title="검색 기록은 로그인 후 저장돼요." text="이전에 검색한 사진과 결과를 다시 확인할 수 있어요." onLogin={() => openLogin()} />) : page === "favorites" ? <Favorites onLogin={() => openLogin()} loggedIn={loggedIn} items={products.filter((item) => favorites.includes(item.id))} favorites={favorites} onFavorite={toggleFavorite} /> : page === "results" ? <SearchResults image={uploadedImage} result={searchResult} busy={searchBusy} error={searchError} loggedIn={loggedIn} onLogin={() => openLogin()} retry={searchFile ? () => void runSearch(searchFile) : undefined} /> : <SearchTestPage image={null} filter={sourceFilter} setFilter={setSourceFilter} />}
+
+    </div>
+    {loginOpen && <LoginCurtain onClose={() => setLoginOpen(false)}><AuthForm onLogin={(nextUser) => { searchController.current?.abort(); setSearchBusy(false); setSearchResult(null); setUploadedImage(null); setSearchFile(null); setUser(nextUser); setNotice(""); setLoginOpen(false); setPage("home"); }} /></LoginCurtain>}
+
+    {uploadMode && <section className={isClosingUpload ? "upload-mode closing" : "upload-mode"} inert={loginOpen} aria-hidden={loginOpen || undefined} aria-modal={!loginOpen} role="dialog"><button className="close-upload" onClick={closeUploadMode} aria-label="업로드 화면 닫기">×</button><div className="upload-content"><h2>UPLOAD PHOTO</h2><div className={isDragging ? "upload-finder dragging" : "upload-finder"} onDragOver={(event) => { event.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={dropImage}><span className="finder-corner top-left" /><span className="finder-corner top-right" /><span className="finder-corner bottom-left" /><span className="finder-corner bottom-right" /><span className="recording">● REC</span><p>사진을 이곳에 끌어다 놓거나 파일을 업로드 해주세요.</p><button className="upload-mode-button" onClick={() => fileInput.current?.click()}>SELECT FILE <span>↗</span></button><small>JPG, PNG · MAX 10MB</small></div></div></section>}
   </main>;
 }
 
@@ -271,56 +345,8 @@ function SearchTestPage({ image, filter, setFilter }: { image: string | null; fi
   </section>;
 }
 
-function History({ loggedIn, history, remove, clear, restore, canRestore, reopen }: { loggedIn: boolean; history: SearchHistory[]; remove: (id: string) => void; clear: () => void; restore: () => void; canRestore: boolean; reopen: () => void }) {
-  const [isClearing, setIsClearing] = useState(false);
-  const [removingId, setRemovingId] = useState<string | null>(null);
-  const cardRefs = useRef(new Map<string, HTMLElement>());
-  const previousCardPositions = useRef(new Map<string, DOMRect>());
-
-  useLayoutEffect(() => {
-    if (!previousCardPositions.current.size) return;
-    cardRefs.current.forEach((card, id) => {
-      const previous = previousCardPositions.current.get(id);
-      if (!previous) return;
-      const next = card.getBoundingClientRect();
-      const x = previous.left - next.left;
-      const y = previous.top - next.top;
-      if (x || y) card.animate([{ transform: `translate(${x}px, ${y}px)` }, { transform: "translate(0, 0)" }], { duration: 360, easing: "cubic-bezier(.2, .8, .25, 1)" });
-    });
-    previousCardPositions.current.clear();
-  }, [history]);
-
-  const clearWithAnimation = () => {
-    if (!history.length || isClearing || removingId) return;
-    setIsClearing(true);
-    window.setTimeout(() => {
-      clear();
-      setIsClearing(false);
-    }, 700);
-  };
-  const removeWithAnimation = (id: string) => {
-    if (isClearing || removingId) return;
-    setRemovingId(id);
-    window.setTimeout(() => {
-      cardRefs.current.forEach((card, cardId) => {
-        if (cardId !== id) previousCardPositions.current.set(cardId, card.getBoundingClientRect());
-      });
-      remove(id);
-      setRemovingId(null);
-    }, 300);
-  };
-  if (!loggedIn) return <MemberGate title="검색 기록은 로그인 후 저장돼요" text="로그인하면 이전에 검색한 사진과 결과를 다시 확인할 수 있어요." />;
-  return <section className="collection-page">
-    <div className="collection-heading"><h1>ARCHIVE</h1><div className="collection-actions"><button className="collection-action" onClick={clearWithAnimation} disabled={!history.length || isClearing || Boolean(removingId)}>CLEAR ALL <span>↗</span></button><button className="collection-return" onClick={restore} disabled={!canRestore || isClearing || Boolean(removingId)}>RETURN <span>↶</span></button></div></div>
-    {history.length ? <div className={isClearing ? "archive-grid is-clearing" : "archive-grid"}>{history.map((item, index) => <article className={`archive-card archive-tone-${index % 3} ${removingId === item.id ? "is-removing" : ""}`} key={item.id} style={isClearing ? { animationDelay: `${index * 42}ms` } : undefined} ref={(element) => { if (element) cardRefs.current.set(item.id, element); else cardRefs.current.delete(item.id); }}>
-      <button className="archive-open" onClick={reopen}><div className="archive-visual saved-visual" /><div className="archive-info"><h2>{item.label}</h2><p>{item.searchedAt}</p><strong>{item.count} MATCHES</strong></div></button>
-      <button className="archive-remove" aria-label={`${item.label} 삭제`} onClick={() => removeWithAnimation(item.id)} disabled={isClearing || Boolean(removingId)}>×</button>
-    </article>)}</div> : <p className="collection-empty">저장된 검색 이력이 없습니다.</p>}
-  </section>;
-}
-
-function Favorites({ loggedIn, items, favorites, onFavorite }: { loggedIn: boolean; items: Product[]; favorites: string[]; onFavorite: (id: string) => void }) {
-  if (!loggedIn) return <MemberGate title="찜 목록은 로그인 후 이용할 수 있어요" text="마음에 드는 상품을 저장하고 나중에 비교해보세요." />;
+function Favorites({ loggedIn, items, favorites, onFavorite, onLogin }: { onLogin: () => void; loggedIn: boolean; items: Product[]; favorites: string[]; onFavorite: (id: string) => void }) {
+  if (!loggedIn) return <MemberGate title="좋아요 목록은 로그인 후 이용할 수 있어요." text="마음에 드는 상품을 저장하고 나중에 비교해보세요." onLogin={onLogin} />;
   return <section className="collection-page">
     <div className="collection-heading"><h1>SAVED LOOKS</h1><span className="collection-count">{favorites.length} ITEMS</span></div>
     {items.length ? <div className="saved-grid">{items.map((item) => <article className="saved-card" key={item.id}>
@@ -329,11 +355,6 @@ function Favorites({ loggedIn, items, favorites, onFavorite }: { loggedIn: boole
   </section>;
 }
 
-function Login({ onLogin }: { onLogin: () => void }) {
-  return <section className="login-page"><div className="login-intro"><p>WELCOME TO</p><h1>LOOKFIND</h1><span>사진으로 찾고, 취향으로 저장하세요.</span></div><form className="login-panel" onSubmit={(event) => { event.preventDefault(); onLogin(); }}><p>MEMBER LOGIN</p><h2>WELCOME<br />BACK</h2><label>EMAIL<input type="email" name="email" placeholder="you@example.com" required /></label><label>PASSWORD<input type="password" name="password" placeholder="••••••••" required /></label><button type="submit">LOGIN <span>↗</span></button><small>아직 계정이 없으신가요? <b>SIGN UP</b></small></form></section>;
-}
-
-function MemberGate({ title, text }: { title: string; text: string }) { return <section className="member-gate"><b>✦</b><h1>{title}</h1><p>{text}</p></section>; }
 
 function HeartIcon({ filled = false }: { filled?: boolean }) {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 20.8-1.32-1.2C5.48 14.9 2.4 12.1 2.4 8.58c0-2.88 2.26-5.18 5.13-5.18 1.62 0 3.18.75 4.2 1.96a5.53 5.53 0 0 1 4.2-1.96c2.87 0 5.13 2.3 5.13 5.18 0 3.52-3.08 6.32-8.28 11.02L12 20.8Z" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={filled ? "1" : "1.15"} strokeLinecap="round" strokeLinejoin="round" /></svg>;

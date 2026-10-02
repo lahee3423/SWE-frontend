@@ -1,5 +1,5 @@
-import type { Product, SearchHistory } from "../types/look-find";
-export const HISTORY_KEY="lookfind-history", FAVORITES_KEY="lookfind-favorites";
+import type { Product } from "../types/look-find";
+export const FAVORITES_KEY="lookfind-favorites";
 export const products:Product[]=[
  {id:"m1",name:"오버핏 빈티지 데님 재킷",brand:"COVERNAT",platform:"무신사",price:89900,similarity:96,tone:"one"},
  {id:"a1",name:"루즈핏 워싱 데님 자켓",brand:"리리앤코",platform:"에이블리",price:42600,similarity:92,tone:"two"},
@@ -14,4 +14,3 @@ export const products:Product[]=[
  {id:"a5",name:"루즈핏 포켓 데님 셔츠",brand:"원로그",platform:"에이블리",price:45500,similarity:67,tone:"three"},
  {id:"z2",name:"크롭 워싱 데님 자켓",brand:"메이비베이비",platform:"지그재그",price:59700,similarity:65,tone:"four"}
 ];
-export const initialHistory:SearchHistory[]=[{id:"h1",label:"데님 재킷 착용 사진",searchedAt:"오늘 오전 10:42",count:20},{id:"h2",label:"블랙 바람막이 사진",searchedAt:"어제 오후 5:20",count:20},{id:"h3",label:"니트 가디건 사진",searchedAt:"9월 12일",count:20},{id:"h4",label:"브라운 스웨이드 재킷",searchedAt:"9월 9일",count:20},{id:"h5",label:"화이트 셔츠 코디",searchedAt:"9월 4일",count:20},{id:"h6",label:"카키 카고 팬츠",searchedAt:"8월 28일",count:20},{id:"h7",label:"스트라이프 셔츠 룩",searchedAt:"8월 21일",count:20},{id:"h8",label:"그레이 후드 집업",searchedAt:"8월 15일",count:20},{id:"h9",label:"레더 미니 스커트",searchedAt:"8월 7일",count:20}];
